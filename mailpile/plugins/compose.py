@@ -246,8 +246,12 @@ class CompositionCommand(AddComposeMethods(Search)):
         return updates
 
     def _return_search_results(self, message, emails,
-                               expand=None, new=[], sent=[], ephemeral=False,
+                               expand=None, new=None, sent=None, ephemeral=False,
                                error=None):
+        if new is None:
+            new = []
+        if sent is None:
+            sent = []
         session, idx = self.session, self._idx()
         if not ephemeral:
             session.results = [e.msg_idx_pos for e in emails]
@@ -445,7 +449,9 @@ class Reply(RelativeCompose):
             result['from'] = ahp.normalized(addresses=[from_ai],
                                             force_name=True)
 
-        def addresses(addrs, exclude=[]):
+        def addresses(addrs, exclude=None):
+            if exclude is None:
+                exclude = []
             alist = [from_ai.address] if (from_ai) else []
             alist += [a.address for a in exclude]
             return [merge_contact(a) for a in addrs

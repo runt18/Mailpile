@@ -1256,7 +1256,9 @@ class ConfigManager(ConfigDict):
         # Else assume dev mode, source tree layout
         return os.path.join(os.path.dirname(__file__), '..', 'shared-data')
 
-    def __init__(self, workdir=None, shareddatadir=None, rules={}):
+    def __init__(self, workdir=None, shareddatadir=None, rules=None):
+        if rules is None:
+            rules = {}
         ConfigDict.__init__(self, _rules=rules, _magic=False)
 
         self.workdir = os.path.abspath(workdir or self.DEFAULT_WORKDIR())
@@ -2102,7 +2104,9 @@ class ConfigManager(ConfigDict):
 
         return default_profile
 
-    def get_route(self, frm, rcpts=['-t']):
+    def get_route(self, frm, rcpts=None):
+        if rcpts is None:
+            rcpts = ['-t']
         if len(rcpts) == 1:
             if rcpts[0].lower().endswith('.onion'):
                 return {"protocol": "smtorp",

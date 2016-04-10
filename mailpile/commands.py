@@ -79,7 +79,11 @@ class Command(object):
     class CommandResult:
         def __init__(self, command_obj, session,
                      command_name, doc, result, status, message,
-                     template_id=None, kwargs={}, error_info={}):
+                     template_id=None, kwargs=None, error_info=None):
+            if kwargs is None:
+                kwargs = {}
+            if error_info is None:
+                error_info = {}
             self.session = session
             self.command_obj = command_obj
             self.command_name = command_name
@@ -830,8 +834,10 @@ class SearchResults(dict):
             self.idx.CACHE[msg_idx] = cache
         return expl
 
-    def _msg_addresses(self, msg_info=None, addresses=[],
+    def _msg_addresses(self, msg_info=None, addresses=None,
                        no_from=False, no_to=False, no_cc=False):
+        if addresses is None:
+            addresses = []
         cids = set()
 
         for ai in addresses:
@@ -866,7 +872,9 @@ class SearchResults(dict):
                 if t and t in self.session.config.tags]
         return tids
 
-    def _tag(self, tid, attributes={}):
+    def _tag(self, tid, attributes=None):
+        if attributes is None:
+            attributes = {}
         return dict_merge(self.session.config.get_tag_info(tid), attributes)
 
     _BAR = u'\u2502'

@@ -129,7 +129,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                           ) % (destination, destination))
 
     def send_standard_headers(self,
-                              header_list=[],
+                              header_list=None,
                               cachectrl='private',
                               mimetype='text/html'):
         """
@@ -146,6 +146,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         cachectrl    -- The value of the 'Cache-Control' header field
         mimetype     -- The MIME type to send as 'Content-Type' value
         """
+        if header_list is None:
+            header_list = []
         if mimetype.startswith('text/') and ';' not in mimetype:
             mimetype += ('; charset = utf-8')
         self.send_header('Cache-Control', cachectrl)
@@ -168,7 +170,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
     def send_full_response(self, message,
                            code=200, msg='OK',
-                           mimetype='text/html', header_list=[],
+                           mimetype='text/html', header_list=None,
                            cachectrl=None,
                            suppress_body=False):
         """
@@ -182,6 +184,8 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         suppress_body -- Set this to True to ignore the message parameter
                               and not send any response body
         """
+        if header_list is None:
+            header_list = []
         message = unicode(message).encode('utf-8')
         self.log_request(code, message and len(message) or '-')
         # Send HTTP/1.1 header
@@ -328,7 +332,9 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             if mailpile.util.QUITTING:
                 self.wfile.close()
 
-    def _real_do_GET(self, post_data={}, suppress_body=False, method='GET'):
+    def _real_do_GET(self, post_data=None, suppress_body=False, method='GET'):
+        if post_data is None:
+            post_data = {}
         (scheme, netloc, path, params, query, frag) = urlparse(self.path)
         query_data = parse_qs(query)
         opath = path = unquote(path)

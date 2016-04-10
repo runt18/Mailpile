@@ -40,7 +40,9 @@ class DAVClient:
         else:
             self.auth = None
 
-    def request(self, url, method, headers={}, body=""):
+    def request(self, url, method, headers=None, body=""):
+        if headers is None:
+            headers = {}
         if self.protocol == "https":
             req = httplib.HTTPSConnection(self.host, self.port)
             # FIXME: Verify HTTPS certificate

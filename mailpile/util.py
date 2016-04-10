@@ -631,7 +631,7 @@ def friendly_time(timestamp):
 
 
 def friendly_number(number, base=1000, decimals=0, suffix='',
-                    powers=['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']):
+                    powers=None):
     """
     Format a number as friendly text, using common suffixes.
 
@@ -644,6 +644,8 @@ def friendly_number(number, base=1000, decimals=0, suffix='',
     >>> friendly_number(1024000000, base=1024, suffix='iB')
     '977MiB'
     """
+    if powers is None:
+        powers = ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
     count = 0
     number = float(number)
     while number > base and count < len(powers):

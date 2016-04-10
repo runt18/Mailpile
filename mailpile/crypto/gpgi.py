@@ -1110,13 +1110,15 @@ class GnuPG:
 
         return GnuPGResultParser().parse([None, retvals]).signature_info
 
-    def encrypt(self, data, tokeys=[], armor=True,
+    def encrypt(self, data, tokeys=None, armor=True,
                             sign=False, fromkey=None):
         """
         >>> g = GnuPG(None)
         >>> g.encrypt("Hello, World", to=["smari@mailpile.is"])[0]
         0
         """
+        if tokeys is None:
+            tokeys = []
         if tokeys:
             action = ["--encrypt", "--yes", "--expert",
                       "--trust-model", "always"]
@@ -1428,7 +1430,9 @@ class GnuPGExpectScript(threading.Thread):
     DESCRIPTION = 'GnuPG Expect Script'
     RUNNING_STATES = [STARTUP, START_GPG]
 
-    def __init__(self, sps=None, event=None, variables={}, on_complete=None):
+    def __init__(self, sps=None, event=None, variables=None, on_complete=None):
+        if variables is None:
+            variables = {}
         threading.Thread.__init__(self)
         self.daemon = True
         self._lock = threading.RLock()

@@ -66,7 +66,9 @@ canvastest = """
 
 """
 
-def colorprint(fingerprint, md5shift=True, mixer=[4, 8, 4]):
+def colorprint(fingerprint, md5shift=True, mixer=None):
+    if mixer is None:
+        mixer = [4, 8, 4]
     fingerprint = fingerprint.replace(' ', '').upper()
     while 0 != ((len(fingerprint)//2) % 3):
         fingerprint += '  '

@@ -432,7 +432,9 @@ class UserInteraction:
     def _make_data_filename(self, name_fmt, attributes):
         return (name_fmt or self.DEFAULT_DATA_NAME_FMT) % attributes
 
-    def _make_data_attributes(self, attributes={}):
+    def _make_data_attributes(self, attributes=None):
+        if attributes is None:
+            attributes = {}
         attrs = self.DEFAULT_DATA_ATTRS.copy()
         attrs.update(attributes)
         attrs['rand'] = '%4.4x' % random.randint(0, 0xffff)
@@ -441,7 +443,9 @@ class UserInteraction:
                 attrs['att_ext'] = self.DEFAULT_DATA_EXTS[attrs['mimetype']]
         return attrs
 
-    def open_for_data(self, name_fmt=None, attributes={}):
+    def open_for_data(self, name_fmt=None, attributes=None):
+        if attributes is None:
+            attributes = {}
         filename = self._make_data_filename(
             name_fmt, self._make_data_attributes(attributes))
         return filename, open(filename, 'w')
@@ -604,7 +608,9 @@ class HttpUserInteraction(UserInteraction):
         self.results.append((ttype, result))
 
     # Stream raw data to the client on open_for_data
-    def open_for_data(self, name_fmt=None, attributes={}):
+    def open_for_data(self, name_fmt=None, attributes=None):
+        if attributes is None:
+            attributes = {}
         return 'HTTP Client', RawHttpResponder(self.request, attributes)
 
     def _render_text_responses(self, config):
@@ -682,7 +688,9 @@ class CapturingUserInteraction(UserInteraction):
 
 class RawHttpResponder:
 
-    def __init__(self, request, attributes={}):
+    def __init__(self, request, attributes=None):
+        if attributes is None:
+            attributes = {}
         self.raised = False
         self.request = request
         #

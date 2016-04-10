@@ -63,7 +63,7 @@ class Nicknym:
         return json.loads(result), ""
 
     def _nickserver_get_key(self, address, keytype="openpgp", server=None):
-        if server == None: server = self._discover_server(address)
+        if server is None: server = self._discover_server(address)
 
         data = urllib.urlencode({"address": address})
         with ConnBroker.context(need=[ConnBroker.OUTGOING_HTTP]):

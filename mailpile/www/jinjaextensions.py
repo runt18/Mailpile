@@ -34,7 +34,7 @@ while dirname and tail and os.path.exists(dirname):
     if os.path.exists(fetch_head):
         try:
             md5 = md5_hex(open(fetch_head, 'r').read())
-            VERSION_IDENTIFIER = '%s-%s' % (APPVER, md5[:8])
+            VERSION_IDENTIFIER = '{0!s}-{1!s}'.format(APPVER, md5[:8])
             break
         except (OSError, IOError):
             break
@@ -173,12 +173,11 @@ class MailpileCommand(Extension):
 
     def _command(self, command, *args, **kwargs):
         rv = Action(self.env.session, command, args, data=kwargs).as_dict()
-        self._debug('mailpile(%s, %s, %s) -> %s'
-                    % (command, args, kwargs, rv))
+        self._debug('mailpile({0!s}, {1!s}, {2!s}) -> {3!s}'.format(command, args, kwargs, rv))
         return rv
 
     def _command_render(self, how, command, *args, **kwargs):
-        self._debug('mailpile_render(%s, %s, ...)' % (how, command))
+        self._debug('mailpile_render({0!s}, {1!s}, ...)'.format(how, command))
         old_ui, config = self.env.session.ui, self.env.session.config
         try:
             ui = self.env.session.ui = HttpUserInteraction(None, config,
@@ -194,12 +193,12 @@ class MailpileCommand(Extension):
             self.env.session.ui = old_ui
 
     def _use_data_view(self, view_name, result):
-        self._debug('use_data_view(%s, ...)' % (view_name))
+        self._debug('use_data_view({0!s}, ...)'.format((view_name)))
         dv = UrlMap(self.env.session).map(None, 'GET', view_name, {}, {})[-1]
         return dv.view(result)
 
     def _get_ui_elements(self, ui_type, state, context=None):
-        self._debug('get_ui_element(%s, %s, ...)' % (ui_type, state))
+        self._debug('get_ui_element({0!s}, {1!s}, ...)'.format(ui_type, state))
         ctx = context or state.get('context_url', '')
         return copy.deepcopy(PluginManager().get_ui_elements(ui_type, ctx))
 
@@ -233,17 +232,15 @@ class MailpileCommand(Extension):
             return url + frag
 
     def _ui_elements_setup(self, classfmt, elements):
-        self._debug('ui_elements_setup(%s, %s)' % (classfmt, elements))
+        self._debug('ui_elements_setup({0!s}, {1!s})'.format(classfmt, elements))
         setups = []
         for elem in elements:
             if elem.get('javascript_setup'):
-                setups.append('$("%s").each(function(){%s(this);});'
-                              % (classfmt % elem, elem['javascript_setup']))
+                setups.append('$("{0!s}").each(function(){{{1!s}(this);}});'.format(classfmt % elem, elem['javascript_setup']))
             if elem.get('javascript_events'):
                 for event, call in elem.get('javascript_events').iteritems():
-                    setups.append('$("%s").bind("%s", %s);' %
-                        (classfmt % elem, event, call))
-        return Markup("function(){%s}" % ''.join(setups))
+                    setups.append('$("{0!s}").bind("{1!s}", {2!s});'.format(classfmt % elem, event, call))
+        return Markup("function(){{{0!s}}}".format(''.join(setups)))
 
     def _regex_replace(self, s, find, replace):
         """A non-optimal implementation of a regex filter"""
@@ -262,8 +259,7 @@ class MailpileCommand(Extension):
         if "photo" in contact:
             photo = contact['photo']
         else:
-            photo = ('%s/static/img/avatar-default.png'
-                     % self.env.session.config.sys.http_path)
+            photo = ('{0!s}/static/img/avatar-default.png'.format(self.env.session.config.sys.http_path))
         return photo
 
     def _navigation_on(self, search_tag_ids, on_tid):
@@ -275,7 +271,7 @@ class MailpileCommand(Extension):
                     return ""
 
     def _has_label_tags(self, tags, tag_tids):
-        self._debug('has_label_tags(..., %s, ...)' % (tag_tids,))
+        self._debug('has_label_tags(..., {0!s}, ...)'.format(tag_tids))
         count = 0
         for tid in tag_tids:
             if tags[tid]["label"] and not tags[tid]["searched"]:
@@ -538,15 +534,14 @@ class MailpileCommand(Extension):
                          person['address'])
 
         if 'contact' in person['flags']:
-            url = ("%s/contacts/view/%s/"
-                   % (self.env.session.config.sys.http_path,
+            url = ("{0!s}/contacts/view/{1!s}/".format(self.env.session.config.sys.http_path,
                       person['address']))
         else:
-            url = "%s/#add-contact" % self.env.session.config.sys.http_path
+            url = "{0!s}/#add-contact".format(self.env.session.config.sys.http_path)
         return url
 
     def _contact_name(self, person):
-        self._debug('contact_name(%s)' % (person,))
+        self._debug('contact_name({0!s})'.format(person))
         name = person['fn']
         if (not name or '@' in name) and person.get('email'):
             vcard = self.env.session.config.vcards.get_vcard(person['email'])

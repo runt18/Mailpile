@@ -53,7 +53,7 @@ def OpenMailbox(fn, config, create=False):
             raise
         except:
             pass
-    raise ValueError('Not a mailbox: %s' % fn)
+    raise ValueError('Not a mailbox: {0!s}'.format(fn))
 
 
 def UnorderedPicklable(parent, editable=False):
@@ -129,7 +129,7 @@ def UnorderedPicklable(parent, editable=False):
             self._refresh()
 
         def get_msg_ptr(self, mboxid, toc_id):
-            return '%s%s' % (mboxid, quote(toc_id))
+            return '{0!s}{1!s}'.format(mboxid, quote(toc_id))
 
         def get_file(self, *args, **kwargs):
             with self._lock:

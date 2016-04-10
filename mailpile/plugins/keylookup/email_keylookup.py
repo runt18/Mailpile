@@ -63,7 +63,7 @@ def _get_keydata(data):
         try:
             if isinstance(m, pgpdump.packet.PublicKeyPacket):
                 size = str(int(1.024 *
-                               round(len('%x' % (m.modulus or 0)) / 0.256)))
+                               round(len('{0:x}'.format((m.modulus or 0))) / 0.256)))
                 validity = ('e'
                             if (0 < (int(m.expiration_time or 0)) < now)
                             else '')
@@ -108,7 +108,7 @@ class EmailKeyLookupHandler(LookupHandler, Search):
     def _lookup(self, address, strict_email_match=False):
         results = {}
         address = address.lower()
-        terms = ['from:%s' % address, 'has:pgpkey', '+pgpkey:%s' % address]
+        terms = ['from:{0!s}'.format(address), 'has:pgpkey', '+pgpkey:{0!s}'.format(address)]
         session, idx = self._do_search(search=terms)
         deadline = time.time() + (0.75 * self.TIMEOUT)
         for messageid in session.results[:5]:
@@ -156,7 +156,7 @@ def has_pgpkey_data_kw_extractor(index, msg, mimetype, filename, part, loader,
         for keydata in data:
             for uid in keydata.get('uids', []):
                 if uid.get('email'):
-                    kws.append('%s:pgpkey' % uid['email'].lower())
+                    kws.append('{0!s}:pgpkey'.format(uid['email'].lower()))
         if data:
             body_info['pgp_key'] = filename
             kws += ['pgpkey:has']

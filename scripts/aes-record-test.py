@@ -30,12 +30,12 @@ class EncryptedRecordStore(object):
         self.calculate_constants()
 
         self.iv_seed = getrandbits(48)
-        self.iv_seed_random = '%x' % getrandbits(64)
+        self.iv_seed_random = '{0:x}'.format(getrandbits(64))
         self.aes_key = key_hash[:16]
         self.header_data = {
             'record_size': self.RECORD_SIZE,
             'filename': fn,
-            'ivs': '%12.12x' % self.iv_seed
+            'ivs': '{0:12.12x}'.format(self.iv_seed)
         }
 
         try:
@@ -92,7 +92,7 @@ class EncryptedRecordStore(object):
             return False
 
     def write_header(self):
-        self.header_data['ivs'] = '%12.12x' % self.iv_seed
+        self.header_data['ivs'] = '{0:12.12x}'.format(self.iv_seed)
         header = self.HEADER % self.header_data
         self.fd.seek(0)
         self.fd.write(header)
@@ -156,12 +156,11 @@ class EncryptedRecordStore(object):
 for size in (16, 50, 100, 200, 400, 800, 1600):
     er = EncryptedRecordStore('/tmp/tmp.aes', 'this is my secret key',
                               max_bytes=size, overwrite=True)
-    print('Testing max_size=%d, real max=%d, lines=%d'
-          % (size, er.MAX_DATA_SIZE, er.RECORD_LINES))
+    print('Testing max_size={0:d}, real max={1:d}, lines={2:d}'.format(size, er.MAX_DATA_SIZE, er.RECORD_LINES))
     for l in range(0, 20):
-        er.save_record(l, 'bjarni %s' % l)
+        er.save_record(l, 'bjarni {0!s}'.format(l))
     for l in range(0, 20):
-        assert(er.load_record(l) == 'bjarni %s' % l)
+        assert(er.load_record(l) == 'bjarni {0!s}'.format(l))
 
 er = EncryptedRecordStore('test.aes', 'this is my secret key', 740)
 t0 = time.time()
@@ -172,13 +171,11 @@ for l in range(0, count):
                              'a fair bit longer, so it makes a good test '
                              'to say about this and that and the other')
 done = time.time()
-print ('100k record writes in %.2f (%.8f s/op)'
-       % (done - t0, (done - t0) / count))
+print ('100k record writes in {0:.2f} ({1:.8f} s/op)'.format(done - t0, (done - t0) / count))
 
 t0 = time.time()
 for l in range(0, count):
     er.load_record(l % 1024)
 done = time.time()
-print ('100k record reads in %.2f (%.8f s/op)'
-       % (done - t0, (done - t0) / count))
+print ('100k record reads in {0:.2f} ({1:.8f} s/op)'.format(done - t0, (done - t0) / count))
 er.close()

@@ -82,7 +82,7 @@ class POP3Mailbox(Mailbox):
     def _get(self, key, _bytes=None):
         with self._lock:
             if key not in self.iterkeys():
-                raise KeyError('Invalid key: %s' % key)
+                raise KeyError('Invalid key: {0!s}'.format(key))
 
             self._connect()
             if _bytes is not None:
@@ -91,7 +91,7 @@ class POP3Mailbox(Mailbox):
             else:
                 ok, lines, octets = self._pop3.retr(self._km[key])
             if not ok.startswith('+OK'):
-                raise KeyError('Invalid key: %s' % key)
+                raise KeyError('Invalid key: {0!s}'.format(key))
 
         # poplib is stupid in that it loses the linefeeds, so we need to
         # do some guesswork to bring them back to what the server provided.
@@ -110,7 +110,7 @@ class POP3Mailbox(Mailbox):
         elif octets == have_octets + 2*len(lines) - 2:
             data = '\r\n'.join(lines)
         else:
-            raise ValueError('Length mismatch in message %s' % key)
+            raise ValueError('Length mismatch in message {0!s}'.format(key))
 
         if _bytes is not None:
             return data[:_bytes]
@@ -133,7 +133,7 @@ class POP3Mailbox(Mailbox):
         with self._lock:
             self._connect()
             if key not in self.iterkeys():
-                raise KeyError('Invalid key: %s' % key)
+                raise KeyError('Invalid key: {0!s}'.format(key))
             ok, info, octets = self._pop3.list(self._km[key]).split()
             return int(octets)
 
@@ -209,7 +209,7 @@ class MailpileMailbox(UnorderedPicklable(POP3Mailbox)):
 
             # WARNING: Order must match POP3Mailbox.__init__(...)
             return (server, user, password, 's' in proto, int(port), debug)
-        raise ValueError('Not a POP3 url: %s' % path)
+        raise ValueError('Not a POP3 url: {0!s}'.format(path))
 
     def save(self, *args, **kwargs):
         # Do not save state locally
@@ -269,8 +269,8 @@ if __name__ == "__main__":
             'stat': (2, 123456),
             'noop': '+OK',
             'list_': lambda s: ('+OK 2 messages:',
-                                ['1 %d' % len(s.TEST_MSG.replace('\r', '')),
-                                 '2 %d' % len(s.TEST_MSG)], 0),
+                                ['1 {0:d}'.format(len(s.TEST_MSG.replace('\r', ''))),
+                                 '2 {0:d}'.format(len(s.TEST_MSG))], 0),
             'uidl': ('+OK', ['1 evil', '2 good'], 0),
             'retr': lambda s, m: ('+OK',
                                   s.TEST_MSG.replace('N', m).splitlines(),
@@ -325,13 +325,13 @@ if __name__ == "__main__":
 
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print '%s' % (results, )
+    print '{0!s}'.format(results )
     if results.failed:
         sys.exit(1)
 
     if len(sys.argv) > 1:
         mbx = MailpileMailbox(*MailpileMailbox.parse_path(None, sys.argv[1]))
-        print 'Status is: %s' % (mbx.stat(), )
+        print 'Status is: {0!s}'.format(mbx.stat() )
         print 'Downloading mail and listing subjects, hit CTRL-C to quit'
         for msg in mbx:
             print msg['subject']

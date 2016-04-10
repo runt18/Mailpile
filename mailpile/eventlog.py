@@ -27,7 +27,7 @@ def NewEventId():
     with EVENT_COUNTER_LOCK:
         EVENT_COUNTER = EVENT_COUNTER+1
         EVENT_COUNTER %= 0x100000
-        return '%8.8x-%5.5x-%x' % (time.time(), EVENT_COUNTER, os.getpid())
+        return '{0:8.8x}-{1:5.5x}-{2:x}'.format(time.time(), EVENT_COUNTER, os.getpid())
 
 
 def _ClassName(obj, ignore_regexps=False):
@@ -41,7 +41,7 @@ def _ClassName(obj, ignore_regexps=False):
         module = str(obj.__class__.__module__)
         if module.startswith('mailpile.'):
             module = module[len('mailpile'):]
-        return '%s.%s' % (module, str(obj.__class__.__name__))
+        return '{0!s}.{1!s}'.format(module, str(obj.__class__.__name__))
 
 
 class Event(object):
@@ -144,7 +144,7 @@ class Event(object):
                                                        compact=True)
         except (AttributeError, NameError):
             if compact:
-                return '%s=%s:%s %s' % (self.event_id,
+                return '{0!s}={1!s}:{2!s} {3!s}'.format(self.event_id,
                                         self.source.split('.')[-1],
                                         self.flags, self.message)
             else:
@@ -235,7 +235,7 @@ class EventLog(object):
 
         # Write any incomplete events to the new file
         for e in self.incomplete():
-            self._log_fd.write('%s\n' % e)
+            self._log_fd.write('{0!s}\n'.format(e))
 
         # We're starting over, incomplete events don't count
         self._logged = 0
@@ -260,7 +260,7 @@ class EventLog(object):
         events.sort(key=lambda ev: ev.ts)
         try:
             for event in events:
-                self._log_fd.write('%s\n' % event)
+                self._log_fd.write('{0!s}\n'.format(event))
                 self._events[event.event_id] = event
         except IOError:
             if recursed:
@@ -322,7 +322,7 @@ class EventLog(object):
                     return False
             else:
                 # Unknown keywords match nothing...
-                print 'Unknown keyword: `%s=%s`' % (okw, rule)
+                print 'Unknown keyword: `{0!s}={1!s}`'.format(okw, rule)
                 return False
         return True
 

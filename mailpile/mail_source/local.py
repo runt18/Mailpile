@@ -55,7 +55,7 @@ class LocalMailSource(BaseMailSource):
             sz = long(os.path.getsize(mbx_path))
         except (OSError, IOError):
             mt = sz = (int(time.time()) // 7200)  # Guarantee rescans
-        mtsz = state['mtsz'] = '%s/%s' % (mt, sz)
+        mtsz = state['mtsz'] = '{0!s}/{1!s}'.format(mt, sz)
 
         # Check more carefully if it's a Maildir, Mac Maildir or WERVD.
         if os.path.isdir(mbx_path):
@@ -69,7 +69,7 @@ class LocalMailSource(BaseMailSource):
                 try:
                     mt = long(os.path.getmtime(sub_path))
                     sz = long(os.path.getsize(sub_path))
-                    sub_mtsz = '%s/%s' % (mt, sz)
+                    sub_mtsz = '{0!s}/{1!s}'.format(mt, sz)
                     mtsz += ',' + sub_mtsz
                     state['mtsz'] += ',' + sub_mtsz
                 except (OSError, IOError):

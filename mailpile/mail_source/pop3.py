@@ -75,7 +75,7 @@ class Pop3MailSource(BaseMailSource):
         pop3 = self.session.config.open_mailbox(self.session,
                                                 FormatMbxId(mbx._key),
                                                 prefer_local=False)
-        state['stat'] = stat = '%s' % (pop3.stat(), )
+        state['stat'] = stat = '{0!s}'.format(pop3.stat() )
         return (self.event.data.get('mailbox_state', {}).get(mbx._key) != stat)
 
     def _mark_mailbox_rescanned(self, mbx, state):
@@ -85,7 +85,7 @@ class Pop3MailSource(BaseMailSource):
             self.event.data['mailbox_state'] = {mbx._key: state['stat']}
 
     def _fmt_path(self):
-        return 'src:%s' % (self.my_config._key,)
+        return 'src:{0!s}'.format(self.my_config._key)
 
     def open_mailbox(self, mbx_id, mfn):
         my_cfg = self.my_config

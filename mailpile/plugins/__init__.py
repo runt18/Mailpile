@@ -114,7 +114,7 @@ class PluginManager(object):
             for subdir in self._listdir(pdir):
                 pname = subdir.lower()
                 if pname in self.BUILTIN:
-                    print 'Cannot overwrite built-in plugin: %s' % pname
+                    print 'Cannot overwrite built-in plugin: {0!s}'.format(pname)
                     continue
                 if pname in self.DISCOVERED and not update:
                     # FIXME: this is lame
@@ -129,7 +129,7 @@ class PluginManager(object):
                         # FIXME: Need more sanity checks
                         self.DISCOVERED[pname] = (plug_path, manifest)
                 except (ValueError, AssertionError):
-                    print 'Bad manifest: %s' % manifest_filename
+                    print 'Bad manifest: {0!s}'.format(manifest_filename)
                 except (OSError, IOError):
                     pass
 
@@ -146,7 +146,7 @@ class PluginManager(object):
         parents = full_name.split('.')[2:] # skip mailpile.plugins
         module = "mailpile.plugins"
         for parent in parents:
-            mp = '%s.%s' % (module, parent)
+            mp = '{0!s}.{1!s}'.format(module, parent)
             if mp not in sys.modules:
                 sys.modules[mp] = imp.new_module(mp)
                 sys.modules[module].__dict__[parent] = sys.modules[mp]
@@ -160,7 +160,7 @@ class PluginManager(object):
                 exec mfd.read() in sys.modules[full_name].__dict__
 
     def _load(self, plugin_name, process_manifest=False, config=None):
-        full_name = 'mailpile.plugins.%s' % plugin_name
+        full_name = 'mailpile.plugins.{0!s}'.format(plugin_name)
         if full_name in sys.modules:
             return
 
@@ -198,7 +198,7 @@ class PluginManager(object):
                 raise
             except:
                 traceback.print_exc(file=sys.stderr)
-                print 'FIXME: Loading %s failed, tell user!' % full_name
+                print 'FIXME: Loading {0!s} failed, tell user!'.format(full_name)
                 return
 
             spec = (full_name, manifest, dirname)
@@ -208,7 +208,7 @@ class PluginManager(object):
                 self._process_manifest_pass_two(*spec)
                 self._process_startup_hooks(*spec)
         else:
-            print 'What what what?? %s' % plugin_name
+            print 'What what what?? {0!s}'.format(plugin_name)
             return self
 
         if plugin_name not in self.LOADED:
@@ -225,7 +225,7 @@ class PluginManager(object):
     def process_shutdown_hooks(self):
         for plugin_name in self.DISCOVERED.keys():
             try:
-                package = 'mailpile.plugins.%s' % plugin_name
+                package = 'mailpile.plugins.{0!s}'.format(plugin_name)
                 _, manifest = self.DISCOVERED[plugin_name]
 
                 if sys.modules.has_key(package):
@@ -247,7 +247,7 @@ class PluginManager(object):
                     if spec[0] not in failed:
                         process(*spec)
                 except Exception, e:
-                    print 'Failed to process manifest for %s: %s' % (spec[0], e)
+                    print 'Failed to process manifest for {0!s}: {1!s}'.format(spec[0], e)
                     failed.append(spec[0])
                     traceback.print_exc()
         return self
@@ -298,7 +298,7 @@ class PluginManager(object):
             # FIXME: This is all a bit hacky, we probably just want to
             #        kill the SYNOPSIS attribute entirely.
             if 'input' in command:
-                name = url = '%s/%s' % (command['input'], command['name'])
+                name = url = '{0!s}/{1!s}'.format(command['input'], command['name'])
                 cls.UI_CONTEXT = command['input']
             else:
                 name = command.get('name', cls.SYNOPSIS[1])
@@ -363,7 +363,7 @@ class PluginManager(object):
                 # the right place for that particular command.
                 commands = []
                 if (not url.startswith('/api/')) and 'api' in info:
-                    url = '/api/%d%s' % (info['api'], url)
+                    url = '/api/{0:d}{1!s}'.format(info['api'], url)
                     if url[-1] == '/':
                         url += 'as.html'
                 for method in ('GET', 'POST', 'PUT', 'UPDATE', 'DELETE'):
@@ -384,7 +384,7 @@ class PluginManager(object):
                                             'html/' + tpath,
                                             filename)
                 else:
-                    print 'FIXME: Un-routable URL in manifest %s' % url
+                    print 'FIXME: Un-routable URL in manifest {0!s}'.format(url)
 
         # Register email content/crypto hooks
         s = self
@@ -395,7 +395,7 @@ class PluginManager(object):
             ('incoming_content', s.register_incoming_email_content_transform)
         ):
             for item in manifest_path('email_transforms', which):
-                name = '%3.3d_%s' % (int(item.get('priority', 999)), full_name)
+                name = '{0:3.3d}_{1!s}'.format(int(item.get('priority', 999)), full_name)
                 reg(name, self._get_class(full_name, item['class']))
 
         # Register search keyword extractors
@@ -406,7 +406,7 @@ class PluginManager(object):
             ('data', s.register_data_kw_extractor)
         ):
             for item in manifest_path('keyword_extractors', which):
-                reg('%s.%s' % (full_name, item),
+                reg('{0!s}.{1!s}'.format(full_name, item),
                     self._get_class(full_name, item))
 
         # Register contact/vcard hooks
@@ -422,7 +422,7 @@ class PluginManager(object):
         def reg_job(info, spd, register):
             interval, cls = info['interval'], info['class']
             callback = self._get_class(full_name, cls)
-            register('%s.%s/%s-%s' % (full_name, cls, spd, interval),
+            register('{0!s}.{1!s}/{2!s}-{3!s}'.format(full_name, cls, spd, interval),
                      interval, callback)
         for info in manifest_path('periodic_jobs', 'fast'):
             reg_job(info, 'fast', self.register_fast_periodic_job)
@@ -435,12 +435,11 @@ class PluginManager(object):
                 if 'javascript_setup' in hook:
                     js = hook['javascript_setup']
                     if not js.startswith('Mailpile.'):
-                       hook['javascript_setup'] = '%s.%s' % (ucfull_name, js)
+                       hook['javascript_setup'] = '{0!s}.{1!s}'.format(ucfull_name, js)
                 if 'javascript_events' in hook:
                     for event, call in hook['javascript_events'].iteritems():
                         if not call.startswith('Mailpile.'):
-                            hook['javascript_events'][event] = '%s.%s' \
-                                % (ucfull_name, call)
+                            hook['javascript_events'][event] = '{0!s}.{1!s}'.format(ucfull_name, call)
                 self.register_ui_element(ui_type, **hook)
 
     def _process_startup_hooks(self, package,
@@ -462,7 +461,7 @@ class PluginManager(object):
                 raise PluginError('Naughty plugin tried to directly access '
                                   'mailpile.plugins!')
 
-            where = '->'.join(['%s:%s' % ('/'.join(stack[i][1].split('/')[-2:]),
+            where = '->'.join(['{0!s}:{1!s}'.format('/'.join(stack[i][1].split('/')[-2:]),
                                           stack[i][2])
                               for i in reversed(range(2, len(stack)-1))])
             print ('FIXME: Deprecated use of %s at %s (issue #547)'
@@ -470,7 +469,7 @@ class PluginManager(object):
 
     def _rhtf(self, kw_hash, term, function):
         if term in kw_hash:
-            raise PluginError('Already registered: %s' % term)
+            raise PluginError('Already registered: {0!s}'.format(term))
         kw_hash[term] = function
 
 
@@ -486,7 +485,7 @@ class PluginManager(object):
             dest = dest[arg][-1]
         for rname, rule in rules.iteritems():
             if rname in dest:
-                raise PluginError('Variable already exist: %s/%s' % (path, rname))
+                raise PluginError('Variable already exist: {0!s}/{1!s}'.format(path, rname))
             else:
                 dest[rname] = rule
 
@@ -500,7 +499,7 @@ class PluginManager(object):
         for arg in args:
             dest = dest[arg][-1]
         if rname in dest:
-            raise PluginError('Section already exist: %s/%s' % (path, rname))
+            raise PluginError('Section already exist: {0!s}/{1!s}'.format(path, rname))
         else:
             dest[rname] = rules
 
@@ -601,7 +600,7 @@ class PluginManager(object):
     def register_search_term(self, term, function):
         self._compat_check()
         if term in self.SEARCH_TERMS:
-            raise PluginError('Already registered: %s' % term)
+            raise PluginError('Already registered: {0!s}'.format(term))
         self.SEARCH_TERMS[term] = function
 
 
@@ -639,10 +638,9 @@ class PluginManager(object):
                 raise PluginError("Please set SHORT_NAME "
                                   "and FORMAT_* attributes!")
             if not issubclass(plugin_class, cls):
-                raise PluginError("%s must be a %s" % (what, cls))
+                raise PluginError("{0!s} must be a {1!s}".format(what, cls))
             if plugin_class.SHORT_NAME in dct:
-                raise PluginError("%s for %s already registered"
-                                  % (what, importer.FORMAT_NAME))
+                raise PluginError("{0!s} for {1!s} already registered".format(what, importer.FORMAT_NAME))
 
             if plugin_class.CONFIG_RULES:
                 rules = {
@@ -720,10 +718,10 @@ class PluginManager(object):
     WEB_ASSETS = {}
 
     def register_js(self, plugin, classname, filename):
-        self.JS_CLASSES['%s.%s' % (plugin, classname)] = filename
+        self.JS_CLASSES['{0!s}.{1!s}'.format(plugin, classname)] = filename
 
     def register_css(self, plugin, classname, filename):
-        self.CSS_FILES['%s.%s' % (plugin, classname)] = filename
+        self.CSS_FILES['{0!s}.{1!s}'.format(plugin, classname)] = filename
 
     def register_web_asset(self, plugin, path, filename, mimetype='text/html'):
         if path in self.WEB_ASSETS:
@@ -772,7 +770,7 @@ class PluginManager(object):
                 info[k] = v
             self.UI_ELEMENTS[ui_type].append(info)
         else:
-            raise ValueError('Duplicate element: %s' % name)
+            raise ValueError('Duplicate element: {0!s}'.format(name))
 
     def get_ui_elements(self, ui_type, context):
         # FIXME: This is a bit inefficient.

@@ -164,7 +164,7 @@ def UnwrapMimeCrypto(part, protocols=None, psi=None, pei=None, charsets=None, de
             # which breaks signature verification. So we manually parse
             # out the raw payload here.
             head, raw_payload, junk = part.as_string(
-                ).replace('\r\n', '\n').split('\n--%s\n' % boundary, 2)
+                ).replace('\r\n', '\n').split('\n--{0!s}\n'.format(boundary), 2)
 
             part.signature_info = crypto_cls().verify(
                 Normalize(raw_payload), signature.get_payload())
@@ -483,7 +483,7 @@ class MimeEncryptingWrapper(MimeWrapper):
         MimeWrapper.__init__(self, *args, **kwargs)
 
         self.version = MIMEBase(*self.ENCRYPTION_TYPE.split('/'))
-        self.version.set_payload('Version: %s\n' % self.ENCRYPTION_VERSION)
+        self.version.set_payload('Version: {0!s}\n'.format(self.ENCRYPTION_VERSION))
         for h, v in (("Content-Disposition", "attachment"), ):
             self.version.add_header(h, v)
 

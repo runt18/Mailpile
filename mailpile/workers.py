@@ -39,7 +39,7 @@ class Cron(threading.Thread):
         self.lock = WorkerLock()
 
     def __str__(self):
-        return '%s: %s (%ds)' % (threading.Thread.__str__(self),
+        return '{0!s}: {1!s} ({2:d}s)'.format(threading.Thread.__str__(self),
                                  self.running, time.time() - self.last_run)
 
     def add_task(self, name, interval, task):
@@ -118,7 +118,7 @@ class Cron(threading.Thread):
                                            ) % (name, self.name, e))
                 finally:
                     self.last_run = time.time()
-                    self.running = 'Finished %s' % self.running
+                    self.running = 'Finished {0!s}'.format(self.running)
 
             # Some tasks take longer than others, so use the time before
             # executing tasks as reference for the delay
@@ -175,8 +175,7 @@ class Worker(threading.Thread):
         self.wait_until = None
 
     def __str__(self):
-        return ('%s: %s (%ds, jobs=%s, jobs_after=%s)'
-                % (threading.Thread.__str__(self),
+        return ('{0!s}: {1!s} ({2:d}s, jobs={3!s}, jobs_after={4!s})'.format(threading.Thread.__str__(self),
                    self.running,
                    time.time() - self.last_run,
                    len(self.JOBS), len(self.JOBS_LATER)))
@@ -269,12 +268,12 @@ class Worker(threading.Thread):
                 self.last_run = time.time()
                 self.running = name
                 if session:
-                    session.ui.mark('Starting: %s' % name)
+                    session.ui.mark('Starting: {0!s}'.format(name))
                     session.report_task_completed(name, task())
                 else:
                     task()
             except (JobPostponingException), e:
-                session.ui.debug('Postponing: %s' % name)
+                session.ui.debug('Postponing: {0!s}'.format(name))
                 self.add_task(session, name, task,
                               after=time.time() + e.seconds)
             except (IOError, OSError), e:
@@ -284,7 +283,7 @@ class Worker(threading.Thread):
                 self._failed(session, name, task, e)
             finally:
                 self.last_run = time.time()
-                self.running = 'Finished %s' % self.running
+                self.running = 'Finished {0!s}'.format(self.running)
 
     def pause(self, session, first=False):
         with self.LOCK:
@@ -308,7 +307,7 @@ class Worker(threading.Thread):
     def die_soon(self, session=None):
         def die():
             self.ALIVE = False
-        self.add_task(session, '%s shutdown' % self.name, die)
+        self.add_task(session, '{0!s} shutdown'.format(self.name), die)
 
     def quit(self, session=None, join=True):
         self.die_soon(session=session)
@@ -378,6 +377,6 @@ if __name__ == "__main__":
     import sys
     result = doctest.testmod(optionflags=doctest.ELLIPSIS,
                              extraglobs={'junk': {}})
-    print '%s' % (result, )
+    print '{0!s}'.format(result )
     if result.failed:
         sys.exit(1)

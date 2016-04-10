@@ -107,7 +107,7 @@ def Interact(session):
                 except UsageError, e:
                     session.error(unicode(e))
                 except UrlRedirectException, e:
-                    session.error('Tried to redirect to: %s' % e.url)
+                    session.error('Tried to redirect to: {0!s}'.format(e.url))
     except EOFError:
         print
     finally:
@@ -190,7 +190,7 @@ def Main(args):
                                    'please log in!'))
         config.prepare_workers(session)
     except AccessError, e:
-        session.ui.error('Access denied: %s\n' % e)
+        session.ui.error('Access denied: {0!s}\n'.format(e))
         sys.exit(1)
 
     try:

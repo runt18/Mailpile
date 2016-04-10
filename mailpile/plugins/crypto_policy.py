@@ -37,8 +37,8 @@ class UpdateCryptoPolicyForUser(CryptoPolicyBaseAction):
         email, policy = self._parse_args()
 
         if policy not in CRYPTO_POLICIES:
-            return self._error('Policy has to be one of %s' %
-                               '|'.join(CRYPTO_POLICIES))
+            return self._error('Policy has to be one of {0!s}'.format(
+                               '|'.join(CRYPTO_POLICIES)))
 
         vcard = self.session.config.vcards.get_vcard(email)
         if vcard:

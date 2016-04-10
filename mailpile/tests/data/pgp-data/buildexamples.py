@@ -29,7 +29,7 @@ def genExamples():
 	contents = open("sources/" + source, "r").read()
 	language, charset = source.split(".")
         for process in getProcesses():
-            print "Creating %s mail with %s encoding and %s PGP" % (language,
+            print "Creating {0!s} mail with {1!s} encoding and {2!s} PGP".format(language,
                   charset, process)
             string = runPGP(contents, process)
             e = email.message_from_string(string)

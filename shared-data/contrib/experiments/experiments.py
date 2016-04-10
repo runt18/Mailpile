@@ -101,7 +101,7 @@ class EmailCryptoTxf(EmailTransform):
                 part = _AddCryptoState(MIMEText(visible.as_string(),
                                                 'rfc822-headers'))
                 part.set_param('protected-headers',
-                               'v1,%s' % msg['Message-ID'])
+                               'v1,{0!s}'.format(msg['Message-ID']))
                 part['Content-Disposition'] = 'inline'
                 del part['MIME-Version']
                 msg.attach(part)
@@ -111,7 +111,7 @@ class EmailCryptoTxf(EmailTransform):
                 part = _AddCryptoState(MIMEText(invisible.as_string(),
                                                 'rfc822-headers'))
                 part.set_param('protected-headers',
-                               'v1,%s' % msg['Message-ID'])
+                               'v1,{0!s}'.format(msg['Message-ID']))
                 part['Content-Disposition'
                      ] = 'attachment; filename=Secure_Headers.txt'
                 del part['MIME-Version']
@@ -196,7 +196,7 @@ def paragraph_id_extractor(index, msg, ctype, textpart, **kwargs):
                     not (txt.endswith(':'))):
                 txt = re.sub(RE_CLEANPARA, '', txt)[-120:]
 #               print 'PARA: %s' % txt
-                kws.add('%s:p' % md5_hex(txt))
+                kws.add('{0!s}:p'.format(md5_hex(txt)))
             para.update({'text': '', 'qlevel': 0})
 
         for line in textpart.splitlines():

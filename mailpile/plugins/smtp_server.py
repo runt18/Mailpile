@@ -80,7 +80,7 @@ class SMTPChannel(smtpd.SMTPChannel):
             solution = None
 
         want_bits = self.HASHCASH_WANT_BITS
-        addrpair = '%s, %s' % (self.__mailfrom, address)
+        addrpair = '{0!s}, {1!s}'.format(self.__mailfrom, address)
         if solution and addrpair in self.want_hashcash:
             if sha512_512kCheck(self.want_hashcash[addrpair],
                                want_bits, solution):
@@ -212,8 +212,7 @@ class HashCash(Command):
         expected = 2 ** bits
         def marker(counter):
             progress = ((1024.0 * counter) / expected) * 100
-            self.session.ui.mark('Finding a %d-bit collision for %s (%d%%)'
-                                 % (bits, challenge, progress))
+            self.session.ui.mark('Finding a {0:d}-bit collision for {1!s} ({2:d}%)'.format(bits, challenge, progress))
         collision = sha512_512kCollide(challenge, bits, callback1k=marker)
         return self._success({
             'challenge': challenge,

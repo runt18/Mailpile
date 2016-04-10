@@ -106,18 +106,18 @@ def colorprint(fingerprint, md5shift=True, mixer=[4, 8, 4]):
         r3 = (m1*_r(rgb[0]) + m2*_r(rgb[3]) + m3*_r(rgb[6])) // 16
         g3 = (m1*_g(rgb[1]) + m2*_g(rgb[4]) + m3*_g(rgb[7])) // 16
         b3 = (m1*_b(rgb[2]) + m2*_b(rgb[5]) + m3*_b(rgb[8])) // 16
-        r1 = '%2.2x' % _r(rgb[3])
-        g1 = '%2.2x' % _g(rgb[4])
-        b1 = '%2.2x' % _b(rgb[5])
+        r1 = '{0:2.2x}'.format(_r(rgb[3]))
+        g1 = '{0:2.2x}'.format(_g(rgb[4]))
+        b1 = '{0:2.2x}'.format(_b(rgb[5]))
 
-        fr, fg, fb = ['%2.2x' % ((4*c)/5 +0x00) for c in (r3, g3, b3)]
-        br, bg, bb = ['%2.2x' % ((4*c)/5 +0x33) for c in (r3, g3, b3)]
-        rr, gg, bb = ['%2.2x' % c for c in (r3, g3, b3)]
+        fr, fg, fb = ['{0:2.2x}'.format(((4*c)/5 +0x00)) for c in (r3, g3, b3)]
+        br, bg, bb = ['{0:2.2x}'.format(((4*c)/5 +0x33)) for c in (r3, g3, b3)]
+        rr, gg, bb = ['{0:2.2x}'.format(c) for c in (r3, g3, b3)]
 
-        pairs.append(['#%s%s%s' % (rr, gg, bb),  # Mixed
-                      '#%s%s%s' % (r1, g1, b1),  # RGB: Plain
-                      '#%s%s%s' % (fr, fg, fb),  # RGB: Foreground
-                      '#%s%s%s' % (br, bg, bb),  # RGB: Background
+        pairs.append(['#{0!s}{1!s}{2!s}'.format(rr, gg, bb),  # Mixed
+                      '#{0!s}{1!s}{2!s}'.format(r1, g1, b1),  # RGB: Plain
+                      '#{0!s}{1!s}{2!s}'.format(fr, fg, fb),  # RGB: Foreground
+                      '#{0!s}{1!s}{2!s}'.format(br, bg, bb),  # RGB: Background
                       _int(fingerprint[i*2:i*2+2]),
                       fingerprint[i*2:i*2+2]])
 
@@ -184,9 +184,9 @@ def colorprint2(fingerprint, md5shift=True):
         sbtG = (val & 0x30) << 2
         sbtB = (val & 0x0b) << 4
 
-        pairs.append(['#%2.2x%2.2x%2.2x' % (sbtR, sbtG, sbtB),  # sixbytwo
-                      '#%2.2x%2.2x%2.2x' % (r1, g1, b1),        # RGB
-                      '#%2.2x%2.2x%2.2x' % (rm, gm, bm),        # Mixed
+        pairs.append(['#{0:2.2x}{1:2.2x}{2:2.2x}'.format(sbtR, sbtG, sbtB),  # sixbytwo
+                      '#{0:2.2x}{1:2.2x}{2:2.2x}'.format(r1, g1, b1),        # RGB
+                      '#{0:2.2x}{1:2.2x}{2:2.2x}'.format(rm, gm, bm),        # Mixed
                       val,
                       rval & 0xe0,        # 0xc0 == 2 bits per channel
                       val & 0x18,         # These bits are orphans!
@@ -203,10 +203,10 @@ def tohtml(cprint, brk=False):
         if brk and ((i % 4) == 3):
             pairs.append('<br>')
     # Fixed width font, so all our rainbows have the same proportions.
-    return '<tt>%s</tt>\n' % ''.join(pairs)
+    return '<tt>{0!s}</tt>\n'.format(''.join(pairs))
 
 def toangel(slices, fingerprint, copy=True, size=64):
-    return ''.join(['<span class=angel title="%s">' % fingerprint,
+    return ''.join(['<span class=angel title="{0!s}">'.format(fingerprint),
                     ('<script>document.write("<img '
                      'src=\'"+getWheel(%s, %s)+"\'>");</script>'
                      ) % (size, slices, ),
@@ -302,6 +302,6 @@ for line in """\
             print '<br>'
 
 print '<hr>'
-print 'Generated: %s' % datetime.datetime.now().ctime()
+print 'Generated: {0!s}'.format(datetime.datetime.now().ctime())
 print '</body></html>'
 

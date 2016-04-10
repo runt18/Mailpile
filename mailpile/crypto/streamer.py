@@ -61,7 +61,7 @@ class IOFilter(threading.Thread):
             self.name = name
 
     def __str__(self):
-        return '%s: %s' % (threading.Thread.__str__(self), self.info)
+        return '{0!s}: {1!s}'.format(threading.Thread.__str__(self), self.info)
 
     def __enter__(self):
         return self
@@ -131,7 +131,7 @@ class IOFilter(threading.Thread):
             okay.append(ValueError)
 
         try:
-            self.info = 'Starting: %s' % self.writing
+            self.info = 'Starting: {0!s}'.format(self.writing)
             self._copy_loop()
         except tuple(okay):
             pass
@@ -160,7 +160,7 @@ class IOCoprocess(object):
             try:
                 self._proc, self._fd = self._popen(command, fd, long_running)
             except:
-                print 'Popen(%s, %s, %s)' % (command, fd, long_running)
+                print 'Popen({0!s}, {1!s}, {2!s})'.format(command, fd, long_running)
                 traceback.print_exc()
                 print
                 raise
@@ -249,7 +249,7 @@ class ChecksummingStreamer(OutputCoprocess):
         if use_filter:
             self.outer_md5 = hashlib.md5()
             self.md5filter = IOFilter(self.tempfile, self._md5_callback,
-                                      name='%s/md5' % (self.name or 'css'))
+                                      name='{0!s}/md5'.format((self.name or 'css')))
             self.fd = self.md5filter.writer()
         else:
             self.outer_md5 = None
@@ -447,17 +447,17 @@ class EncryptingDelimitedStreamer(ChecksummingStreamer):
     def _send_key(self):
         # We talk directly to the underlying FD, to avoid corrupting the
         # inner MD5 sum (calculated using the _write_filter() above).
-        self._fd.write('%s\n' % self.key)
+        self._fd.write('{0!s}\n'.format(self.key))
 
     def _mk_command(self):
-        return [OPENSSL_COMMAND, "enc", "-e", "-a", "-%s" % self.cipher,
+        return [OPENSSL_COMMAND, "enc", "-e", "-a", "-{0!s}".format(self.cipher),
                 "-pass", "stdin", "-bufsize", "0"]
 
     def _write_preamble(self):
         self.fd.write(self.BEGIN_DATA)
-        self.fd.write('cipher: %s\n' % self.cipher)
+        self.fd.write('cipher: {0!s}\n'.format(self.cipher))
         if self.nonce:
-            self.fd.write('nonce: %s\n' % self.nonce)
+            self.fd.write('nonce: {0!s}\n'.format(self.nonce))
         self.fd.write(MD5_SUM_PLACEHOLDER + '\n')
         if self.EXTRA_HEADERS:
             self.fd.write(self.EXTRA_HEADERS % self.header_data)
@@ -580,7 +580,7 @@ class DecryptingStreamer(InputCoprocess):
         if (self.expected_inner_md5sum and
                 self.expected_inner_md5sum != self.inner_md5.hexdigest()):
             if testing:
-                print 'Inner %s != %s' % (self.expected_inner_md5sum,
+                print 'Inner {0!s} != {1!s}'.format(self.expected_inner_md5sum,
                                           self.inner_md5.hexdigest())
             if _raise:
                 raise _raise('Invalid inner MD5 sum')
@@ -590,7 +590,7 @@ class DecryptingStreamer(InputCoprocess):
         if (self.expected_outer_md5sum and
                 self.expected_outer_md5sum != self.outer_md5.hexdigest()):
             if testing:
-                print 'Outer %s != %s' % (self.expected_outer_md5sum,
+                print 'Outer {0!s} != {1!s}'.format(self.expected_outer_md5sum,
                                           self.outer_md5.hexdigest())
             if _raise:
                 raise _raise('Invalid outer MD5 sum')
@@ -601,7 +601,7 @@ class DecryptingStreamer(InputCoprocess):
 
     def _mk_data_filter(self, fd, cb, ecb):
         return IOFilter(fd, cb, error_callback=ecb,
-                        name='%s/filter' % (self.name or 'ds'))
+                        name='{0!s}/filter'.format((self.name or 'ds')))
 
     def _read_data(self, data):
         if data is None:
@@ -707,7 +707,7 @@ class DecryptingStreamer(InputCoprocess):
             if self.gpg_pass:
                 gpg.extend(["--no-use-agent", "--passphrase-fd=0"])
             return gpg
-        return [OPENSSL_COMMAND, "enc", "-d", "-a", "-%s" % self.cipher,
+        return [OPENSSL_COMMAND, "enc", "-d", "-a", "-{0!s}".format(self.cipher),
                 "-pass", "stdin"]
 
 
@@ -752,7 +752,7 @@ class PartialDecryptingStreamer(DecryptingStreamer):
                                 start_data=self.start_data,
                                 stop_check=self.EndEncrypted,
                                 error_callback=ecb,
-                                name='%s/filter' % (self.name or 'ds'))
+                                name='{0!s}/filter'.format((self.name or 'ds')))
 
 
 if __name__ == "__main__":
@@ -765,8 +765,8 @@ if __name__ == "__main__":
          try:
              for fd in fdpair2:
                  if fd not in fdpair1:
-                     print 'Probably have an FD leak at %s!' % where
-                     print 'Verify with: lsof -g %s' % os.getpid()
+                     print 'Probably have an FD leak at {0!s}!'.format(where)
+                     print 'Verify with: lsof -g {0!s}'.format(os.getpid())
                      import time
                      time.sleep(900)
                      return False
@@ -846,13 +846,13 @@ if __name__ == "__main__":
                                      use_filter=filter_md5) as es:
                  es.write(data)
                  es.finish()
-                 fn = '/tmp/%s.aes' % es.outer_md5sum
+                 fn = '/tmp/{0!s}.aes'.format(es.outer_md5sum)
                  with open(fn, 'wb') as fd:
                      fd.write('junk')  # Make sure overwriting works
                  es.save(fn)
-             assert(fdcheck('Encrypted data, delimited=%s' % delim))
+             assert(fdcheck('Encrypted data, delimited={0!s}'.format(delim)))
 
-             print 'Decryption test, delim=%s' % delim
+             print 'Decryption test, delim={0!s}'.format(delim)
              with open(fn, 'rb') as bfd:
                  with DecryptingStreamer(bfd,
                                          mep_key='test key',
@@ -861,7 +861,7 @@ if __name__ == "__main__":
                      assert(ds.close() == 0)
                      assert(data == new_data)
                      assert(ds.verify(testing=True))
-             assert(fdcheck('Decrypting test, delimited=%s' % delim))
+             assert(fdcheck('Decrypting test, delimited={0!s}'.format(delim)))
 
          # Cleanup
          os.unlink(fn)

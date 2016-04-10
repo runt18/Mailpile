@@ -75,7 +75,7 @@ class TestCommands(MailPileUnittest):
         mid = self.mp.search('from:ohcheeou').result['data']['metadata']\
                                              .values()[0]['mid']
         # Just checks it does not crash
-        res = self.mp.reply('ephemeral', '=%s' % mid)
+        res = self.mp.reply('ephemeral', '={0!s}'.format(mid))
         self.assertEqual(res.status, 'success')
         self.assertEqual(res.result['data']['metadata'].values()[0]['subject'],
                          'Re:')
@@ -84,7 +84,7 @@ class TestCommands(MailPileUnittest):
         # Subject: Verb. Target. Outcome.'
         mid = self.mp.search('subject:Verb').result['data']['metadata']\
                                             .values()[0]['mid']
-        res = self.mp.reply('ephemeral', '=%s' % mid)
+        res = self.mp.reply('ephemeral', '={0!s}'.format(mid))
         self.assertEqual(res.result['data']['metadata'].values()[0]['subject'],
                          'Re: Verb. Target. Outcome.')
 
@@ -92,7 +92,7 @@ class TestCommands(MailPileUnittest):
         # Subject: Re: Here's $1
         mid = self.mp.search('subject:Here').result['data']['metadata']\
                                             .values()[0]['mid']
-        res = self.mp.reply('ephemeral', '=%s' % mid)
+        res = self.mp.reply('ephemeral', '={0!s}'.format(mid))
         self.assertEqual(res.result['data']['metadata'].values()[0]['subject'],
                          "Re: Here's $1")
 
@@ -100,7 +100,7 @@ class TestCommands(MailPileUnittest):
         # Subject: Fw: About shrubberies
         mid = self.mp.search('shrubberies').result['data']['metadata']\
                                            .values()[0]['mid']
-        res = self.mp.reply('ephemeral', '=%s' % mid)
+        res = self.mp.reply('ephemeral', '={0!s}'.format(mid))
         self.assertEqual(res.result['data']['metadata'].values()[0]['subject'],
                          "Re: Fw: About shrubberies")
 
@@ -108,7 +108,7 @@ class TestCommands(MailPileUnittest):
         # Subject: Re: Here's $1
         mid = self.mp.search('subject:Here').result['data']['metadata']\
                                             .values()[0]['mid']
-        res = self.mp.forward('ephemeral', '=%s' % mid)
+        res = self.mp.forward('ephemeral', '={0!s}'.format(mid))
         self.assertEqual(res.result['data']['metadata'].values()[0]['subject'],
                          "Fwd: Re: Here's $1")
 
@@ -116,7 +116,7 @@ class TestCommands(MailPileUnittest):
         # Subject: Fw: A question shrubberies
         mid = self.mp.search('shrubberies').result['data']['metadata']\
                                            .values()[0]['mid']
-        res = self.mp.forward('ephemeral', '=%s' % mid)
+        res = self.mp.forward('ephemeral', '={0!s}'.format(mid))
         self.assertEqual(res.result['data']['metadata'].values()[0]['subject'],
                          "Fw: About shrubberies")
 

@@ -72,7 +72,7 @@ def SMTorP_HashCash(rcpt, msg, callback1k=None):
         if callback1k:
             callback1k(*args, **kwargs)
 
-    return '%s##%s' % (rcpt, sha512_512kCollide(challenge, int(bits),
+    return '{0!s}##{1!s}'.format(rcpt, sha512_512kCollide(challenge, int(bits),
                                                 callback1k=cb))
 
 
@@ -119,7 +119,7 @@ def _RouteTuples(session, from_to_msg_ev_tuples, test_route=None):
                     route.update(session.config.get_route(frm, [recipient]))
 
                 # Group together recipients that use the same route
-                rid = '/'.join(sorted(['%s' % (k, )
+                rid = '/'.join(sorted(['{0!s}'.format(k )
                                        for k in route.iteritems()]))
                 routes[rid] = route
                 rcpts[rid] = rcpts.get(rid, [])
@@ -170,8 +170,8 @@ def SendMail(session, msg_mid, from_to_msg_ev_tuples,
     def smtp_do_or_die(msg, events, method, *args, **kwargs):
         rc, msg = method(*args, **kwargs)
         if rc != 250:
-            fail(msg + ' (%s %s)' % (rc, msg), events,
-                 details={'smtp_error': '%s: %s' % (rc, msg)})
+            fail(msg + ' ({0!s} {1!s})'.format(rc, msg), events,
+                 details={'smtp_error': '{0!s}: {1!s}'.format(rc, msg)})
 
     # Do the actual delivering...
     for frm, route, to, msg, events in routes:

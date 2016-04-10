@@ -28,14 +28,14 @@ class DAVClient:
                 raise Exception("Can't determine port from protocol. "
                                 "Please specifiy a port.")
         self.cwd = "/"
-        self.baseurl = "%s://%s:%d" % (protocol, host, port)
+        self.baseurl = "{0!s}://{1!s}:{2:d}".format(protocol, host, port)
         self.host = host
         self.port = port
         self.protocol = protocol
         self.username = username
         self.password = password
         if username and password:
-            self.auth = base64.encodestring('%s:%s' % (username, password)
+            self.auth = base64.encodestring('{0!s}:{1!s}'.format(username, password)
                                             ).replace('\n', '')
         else:
             self.auth = None
@@ -51,7 +51,7 @@ class DAVClient:
         req.putheader("Host", self.host)
         req.putheader("User-Agent", "Mailpile")
         if self.auth:
-            req.putheader("Authorization", "Basic %s" % self.auth)
+            req.putheader("Authorization", "Basic {0!s}".format(self.auth))
 
         for key, value in headers.iteritems():
             req.putheader(key, value)

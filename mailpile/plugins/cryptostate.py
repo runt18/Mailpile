@@ -22,13 +22,13 @@ def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts, **kwargs):
     def crypto_eval(part):
         # This is generic
         if part.encryption_info.get('status') != 'none':
-            enc.add('mp_%s-%s' % ('enc', part.encryption_info['status']))
+            enc.add('mp_{0!s}-{1!s}'.format('enc', part.encryption_info['status']))
             kw.add('crypto:has')
         if part.signature_info.get('status') != 'none':
-            sig.add('mp_%s-%s' % ('sig', part.signature_info['status']))
+            sig.add('mp_{0!s}-{1!s}'.format('sig', part.signature_info['status']))
             kw.add('crypto:has')
         if 'cryptostate' in index.config.sys.debug:
-            print 'part status(=%s): enc=%s sig=%s' % (msg_mid,
+            print 'part status(={0!s}): enc={1!s} sig={2!s}'.format(msg_mid,
                 part.encryption_info.get('status'),
                 part.signature_info.get('status')
             )
@@ -69,10 +69,10 @@ def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts, **kwargs):
     for tname in (enc | sig):
         tag = index.config.get_tags(slug=tname)
         if tag:
-            kw.add('%s:in' % tag[0]._key)
+            kw.add('{0!s}:in'.format(tag[0]._key))
 
     if 'cryptostate' in index.config.sys.debug:
-        print 'part crypto state(=%s): %s' % (msg_mid, ','.join(list(kw)))
+        print 'part crypto state(={0!s}): {1!s}'.format(msg_mid, ','.join(list(kw)))
 
     return list(kw)
 

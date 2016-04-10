@@ -37,7 +37,7 @@ class Tor:
         )
 
     def _print_bootstrap_lines(self, line):
-        print '%s' % line
+        print '{0!s}'.format(line)
         pass
 
     def _create_path(self, name):
@@ -105,12 +105,12 @@ if __name__ == "__main__":
 
     print "BEWARE: This test script will probably leak your actual IP to wtfismyip.com."
     print "        But you shouldn't have run a test script that could fail if you didn't want this to happen."
-    print "Your IP (not torified): %s" % (urllib.urlopen(url).read().strip())
+    print "Your IP (not torified): {0!s}".format((urllib.urlopen(url).read().strip()))
 
     t = Tor()
     t.start_tor()
     t.start_proxying_through_tor()
-    print "Your IP (torified): %s" % (urllib.urlopen(url).read().strip())
+    print "Your IP (torified): {0!s}".format((urllib.urlopen(url).read().strip()))
     t.stop_proxying_through_tor()
 
     print "Creating hidden service..."

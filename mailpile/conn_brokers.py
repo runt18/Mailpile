@@ -168,7 +168,7 @@ class BrokeredContext(object):
         self._reset()
 
     def __str__(self):
-        hostport = '%s:%s' % (self.address or ('unknown', 'none'))
+        hostport = '{0!s}:{1!s}'.format(*(self.address or ('unknown', 'none')))
         if self.error:
             return _('Failed to connect to %s: %s') % (hostport, self.error)
 
@@ -258,15 +258,15 @@ class BaseConnectionBroker(Capability):
         for n in need or []:
             if n not in self.supports:
                 if self._debug is not None:
-                    self._debug('%s: lacking capabilty %s' % (self, n))
-                return self._raise_or_none(_raise, 'Lacking %s' % n)
+                    self._debug('{0!s}: lacking capabilty {1!s}'.format(self, n))
+                return self._raise_or_none(_raise, 'Lacking {0!s}'.format(n))
         for n in reject or []:
             if n in self.supports:
                 if self._debug is not None:
-                    self._debug('%s: unwanted capabilty %s' % (self, n))
-                return self._raise_or_none(_raise, 'Unwanted %s' % n)
+                    self._debug('{0!s}: unwanted capabilty {1!s}'.format(self, n))
+                return self._raise_or_none(_raise, 'Unwanted {0!s}'.format(n))
         if self._debug is not None:
-            self._debug('%s: checks passed!' % (self, ))
+            self._debug('{0!s}: checks passed!'.format(self ))
         return self
 
     def _describe(self, context, conn):
@@ -543,7 +543,7 @@ class BaseConnectionBrokerProxy(TcpConnectionBroker):
 
     def _wrap_ssl(self, conn):
         if self._debug is not None:
-            self._debug('%s: Wrapping socket with SSL' % (self, ))
+            self._debug('{0!s}: Wrapping socket with SSL'.format(self ))
         # FIXME: We're losing the SNI stuff here, which is super lame.
         return ssl.wrap_socket(conn, None, None, ssl_version=self.SSL_VERSION)
 
@@ -667,7 +667,7 @@ class MasterBroker(BaseConnectionBroker):
             except:
                 et, v, t = sys.exc_info()
         if et is not None:
-            context.error = '%s' % v
+            context.error = '{0!s}'.format(v)
             raise et, v, t
 
         context.error = _('No connection method found')
@@ -701,7 +701,7 @@ class NetworkHistory(Command):
             if self.result:
                 def fmt(result):
                     dt = datetime.datetime.fromtimestamp(result[0])
-                    return '%2.2d:%2.2d %s' % (dt.hour, dt.minute, result[-1])
+                    return '{0:2.2d}:{1:2.2d} {2!s}'.format(dt.hour, dt.minute, result[-1])
                 return '\n'.join(fmt(r) for r in self.result)
             return _('No network events recorded')
 
@@ -765,6 +765,6 @@ else:
     import sys
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print '%s' % (results, )
+    print '{0!s}'.format(results )
     if results.failed:
         sys.exit(1)

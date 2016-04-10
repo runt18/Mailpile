@@ -72,8 +72,7 @@ class ContentTxf(EmailTransform):
                 'N': 'unprotected',
                 'CFG': self.config.prefs.openpgp_header
             }[openpgp_header[0].upper()]
-            msg["OpenPGP"] = ("id=%s; preference=%s"
-                              % (sender_keyid, preference))
+            msg["OpenPGP"] = ("id={0!s}; preference={1!s}".format(sender_keyid, preference))
 
         if ('attach-pgp-pubkey' in msg and
                 msg['attach-pgp-pubkey'][:3].lower() in ('yes', 'tru')):
@@ -155,7 +154,7 @@ class GPGKeySearch(Command):
     class CommandResult(Command.CommandResult):
         def as_text(self):
             if self.result:
-                return '\n'.join(["%s: %s <%s>" % (keyid, x["name"], x["email"]) for keyid, det in self.result.iteritems() for x in det["uids"]])
+                return '\n'.join(["{0!s}: {1!s} <{2!s}>".format(keyid, x["name"], x["email"]) for keyid, det in self.result.iteritems() for x in det["uids"]])
             else:
                 return _("No results")
 
@@ -278,7 +277,7 @@ class GPGKeyImportFromMail(Search):
 
         def as_text(self):
             if self.result:
-                return "Imported %d keys (%d updated, %d unchanged) from the mail" % (
+                return "Imported {0:d} keys ({1:d} updated, {2:d} unchanged) from the mail".format(
                     self.result["results"]["count"],
                     self.result["results"]["imported"],
                     self.result["results"]["unchanged"])
@@ -291,7 +290,7 @@ class GPGKeyImportFromMail(Search):
             attid = args.pop()
         else:
             attid = self.data.get("att", 'application/pgp-keys')
-        args.extend(["=%s" % x for x in self.data.get("mid", [])])
+        args.extend(["={0!s}".format(x) for x in self.data.get("mid", [])])
         eids = self._choose_messages(args)
         if len(eids) < 0:
             return self._error("No messages selected", None)
@@ -361,7 +360,7 @@ class GPGUsageStatistics(Search):
 
         def as_text(self):
             if self.result:
-                return "%d%% of e-mail from %s has PGP signatures (%d/%d)" % (
+                return "{0:d}% of e-mail from {1!s} has PGP signatures ({2:d}/{3:d})".format(
                     100*self.result["ratio"],
                     self.result["address"],
                     self.result["pgpsigned"],
@@ -378,12 +377,12 @@ class GPGUsageStatistics(Search):
         if addr is None:
             return self._error("Must supply an address", None)
 
-        session, idx = self._do_search(search=["from:%s" % addr])
+        session, idx = self._do_search(search=["from:{0!s}".format(addr)])
         total = 0
         for messageid in session.results:
             total += 1
 
-        session, idx = self._do_search(search=["from:%s" % addr,  "has:pgp"])
+        session, idx = self._do_search(search=["from:{0!s}".format(addr),  "has:pgp"])
         pgp = 0
         for messageid in session.results:
             pgp += 1
@@ -419,13 +418,13 @@ class GPGCheckKeys(Search):
             if not isinstance(self.result, (dict,)):
                 return ''
             if self.result.get('details'):
-                message = '%s.\n - %s' % (self.message, '\n - '.join(
+                message = '{0!s}.\n - {1!s}'.format(self.message, '\n - '.join(
                     p['description'] for p in self.result['details']
                 ))
             else:
-                message = '%s. %s' % (self.message, _('Looks good!'))
+                message = '{0!s}. {1!s}'.format(self.message, _('Looks good!'))
             if self.result.get('fixes'):
-                message += '\n\n%s\n - %s' % (_('Proposed fixes:'),
+                message += '\n\n{0!s}\n - {1!s}'.format(_('Proposed fixes:'),
                                             '\n - '.join(
                     '\n    * '.join(f) for f in self.result['fixes']
                 ))
@@ -443,14 +442,14 @@ class GPGCheckKeys(Search):
         return [
            _('Update the Mailpile config to use a good key:'),
            _('IMPORTANT: This MUST be done before disabling the key!'),
-           _('Run: %s') % ('`set prefs.gpg_recipient = %s`' % fprint),
+           _('Run: %s') % ('`set prefs.gpg_recipient = {0!s}`'.format(fprint)),
            _('Run: %s') % ('`optimize`'),
            _('This key\'s passphrase will be used to log in to Mailpile')]
 
     def _fix_revoke_key(self, fprint, comment=''):
         return [
             _('Revoke bad keys:') + ('  ' + comment if comment else ''),
-            _('Run: %s') % ('`gpg --gen-revoke %s`' % fprint),
+            _('Run: %s') % ('`gpg --gen-revoke {0!s}`'.format(fprint)),
             _('Say yes to the first question, follow the instructions'),
             _('A revocation certificate will be shown on screen'),
             _('Copy & paste that, save, and send to people who have the old key'),
@@ -460,7 +459,7 @@ class GPGCheckKeys(Search):
     def _fix_disable_key(self, fprint, comment=''):
         return [
             _('Disable bad keys:') + ('  ' + comment if comment else ''),
-            _('Run: %s') % ('`gpg --edit-key %s`' % fprint),
+            _('Run: %s') % ('`gpg --edit-key {0!s}`'.format(fprint)),
             _('Type %s') % '`disable`',
             _('Type %s') % '`save`']
 

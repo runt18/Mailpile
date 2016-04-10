@@ -76,13 +76,13 @@ class NoColors:
         return 79
 
     def color(self, text, color='', weight='', readline=False):
-        return '%s%s%s' % ((self.FORMAT_READLINE if readline else self.FORMAT)
+        return '{0!s}{1!s}{2!s}'.format((self.FORMAT_READLINE if readline else self.FORMAT)
                            % (color, weight), text, self.RESET)
 
     def replace_line(self, text, chars=None):
         pad = ' ' * max(0, min(self.max_width(),
                                self.max_width()-(chars or len(unicode(text)))))
-        return '%s%s\r' % (text, pad)
+        return '{0!s}{1!s}\r'.format(text, pad)
 
     def add_line_below(self):
         pass
@@ -124,7 +124,7 @@ class ANSIColors(NoColors):
         self.check_max_width()
 
     def replace_line(self, text, chars=None):
-        return '%s%s%s\r%s' % (self.CURSOR_SAVE,
+        return '{0!s}{1!s}{2!s}\r{3!s}'.format(self.CURSOR_SAVE,
                                self.CLEAR_LINE, text,
                                self.CURSOR_RESTORE)
 
@@ -242,7 +242,7 @@ class UserInteraction:
 
     def _display_log(self, text, level=LOG_URGENT):
         if not text.startswith(self.log_prefix):
-            text = '%slog(%s): %s' % (self.log_prefix, level, text)
+            text = '{0!s}log({1!s}): {2!s}'.format(self.log_prefix, level, text)
         if self.log_parent is not None:
             self.log_parent.log(level, text)
         else:
@@ -251,7 +251,7 @@ class UserInteraction:
     def _debug_log(self, text, level):
         if text and 'log' in self.config.sys.debug:
             if not text.startswith(self.log_prefix):
-                text = '%slog(%s): %s' % (self.log_prefix, level, text)
+                text = '{0!s}log({1!s}): {2!s}'.format(self.log_prefix, level, text)
             if self.log_parent is not None:
                 return self.log_parent.log(level, text)
             else:
@@ -319,7 +319,7 @@ class UserInteraction:
                     if details:
                         for i in range(0, len(self.times)-1):
                             e = t[i+1][0] - t[i][0]
-                            self.debug(' -> %.3fs (%s)' % (e, t[i][1]))
+                            self.debug(' -> {0:.3f}s ({1!s})'.format(e, t[i][1]))
                 except IndexError:
                     self.notify(_('Elapsed: %.3fs') % elapsed)
             return elapsed
@@ -356,7 +356,7 @@ class UserInteraction:
         self.push_marks(cmd)
         self.mark(('%s(%s)'
                    ) % (cmd, ', '.join((args or tuple()) +
-                                       ('%s' % kwargs, ))))
+                                       ('{0!s}'.format(kwargs), ))))
 
     def finish_command(self, cmd):
         self.pop_marks(name=cmd)
@@ -409,7 +409,7 @@ class UserInteraction:
         except (TypeError, ValueError, KeyError, IndexError,
                 UnicodeDecodeError):
             traceback.print_exc()
-            return '[%s]' % _('Internal Error')
+            return '[{0!s}]'.format(_('Internal Error'))
 
     # Creating output files
     DEFAULT_DATA_NAME_FMT = '%(msg_mid)s.%(count)s_%(att_name)s.%(att_ext)s'
@@ -435,7 +435,7 @@ class UserInteraction:
     def _make_data_attributes(self, attributes={}):
         attrs = self.DEFAULT_DATA_ATTRS.copy()
         attrs.update(attributes)
-        attrs['rand'] = '%4.4x' % random.randint(0, 0xffff)
+        attrs['rand'] = '{0:4.4x}'.format(random.randint(0, 0xffff))
         if attrs['att_ext'] == self.DEFAULT_DATA_ATTRS['att_ext']:
             if attrs['mimetype'] in self.DEFAULT_DATA_EXTS:
                 attrs['att_ext'] = self.DEFAULT_DATA_EXTS[attrs['mimetype']]
@@ -490,9 +490,9 @@ class UserInteraction:
         for kw in ('error', 'details', 'traceback', 'source', 'data'):
             value = error_info.get(kw, '')
             if isinstance(value, dict):
-                ei[kw] = escape_html('%.8196s' % self.render_json(value))
+                ei[kw] = escape_html('{0:.8196!s}'.format(self.render_json(value)))
             else:
-                ei[kw] = escape_html('%.2048s' % value).replace('\n', '<br>')
+                ei[kw] = escape_html('{0:.2048!s}'.format(value)).replace('\n', '<br>')
         return emsg % ei
 
     def render_web(self, cfg, tpl_names, data):
@@ -523,15 +523,14 @@ class UserInteraction:
             tpl_esc_names = [escape_html(tn) for tn in tpl_names]
             return self._render_error(cfg, {
                 'error': _('Template not found'),
-                'details': 'In %s:\n%s' % (e.name, e.message),
+                'details': 'In {0!s}:\n{1!s}'.format(e.name, e.message),
                 'data': alldata
             })
         except (TemplateError, TemplateSyntaxError,
                 TemplateAssertionError,), e:
             return self._render_error(cfg, {
                 'error': _('Template error'),
-                'details': ('In %s (%s), line %s:\n%s'
-                            % (e.name, e.filename, e.lineno, e.message)),
+                'details': ('In {0!s} ({1!s}), line {2!s}:\n{3!s}'.format(e.name, e.filename, e.lineno, e.message)),
                 'source': e.source,
                 'traceback': traceback.format_exc(),
                 'data': alldata
@@ -547,7 +546,7 @@ class UserInteraction:
                 raise NotEditableError(_('Message %s is not editable')
                                        % e.msg_mid())
 
-        sep = '%s(%8.8x%3.3x)-\n' % ('-' * 68, time.time(),
+        sep = '{0!s}({1:8.8x}{2:3.3x})-\n'.format('-' * 68, time.time(),
                                      random.randint(0, 0xfff))
         edit_this = ('\n'+sep).join([e.get_editing_string() for e in emails])
 
@@ -557,7 +556,7 @@ class UserInteraction:
         with self.term:
             try:
                 self.block()
-                os.system('%s %s' % (os.getenv('VISUAL', default='vi'),
+                os.system('{0!s} {1!s}'.format(os.getenv('VISUAL', default='vi'),
                                      tf.name))
             finally:
                 self.unblock()
@@ -609,12 +608,12 @@ class HttpUserInteraction(UserInteraction):
 
     def _render_text_responses(self, config):
         if config.sys.debug:
-            return '%s\n%s' % (
+            return '{0!s}\n{1!s}'.format(
                 '\n'.join([l[1] for l in self.logged]),
-                ('\n%s\n' % ('=' * 79)).join(r for t, r in self.results)
+                ('\n{0!s}\n'.format(('=' * 79))).join(r for t, r in self.results)
             )
         else:
-            return ('\n%s\n' % ('=' * 79)).join(r for t, r in self.results)
+            return ('\n{0!s}\n'.format(('=' * 79))).join(r for t, r in self.results)
 
     def _ttype_to_mimetype(self, ttype, result):
         return ({
@@ -635,7 +634,7 @@ class HttpUserInteraction(UserInteraction):
             if len(self.results) == 1:
                 data = self.results[0][1]
             else:
-                data = '[%s]' % ','.join(r for t, r in self.results)
+                data = '[{0!s}]'.format(','.join(r for t, r in self.results))
             return ('application/json', data)
         else:
             if len(self.results) == 1:
@@ -701,7 +700,7 @@ class RawHttpResponder:
         if disposition and filename:
             encfilename = urllib.quote(filename.encode("utf-8"))
             headers.append(('Content-Disposition',
-                            '%s; filename*=UTF-8\'\'%s' % (disposition,
+                            '{0!s}; filename*=UTF-8\'\'{1!s}'.format(disposition,
                                                            encfilename)))
         elif disposition:
             headers.append(('Content-Disposition', disposition))
@@ -763,7 +762,7 @@ class Session(object):
                 sid = self.config.search_history.add(self.searched,
                                                      self.results,
                                                      self.order)
-                self.context = 'search:%s' % sid
+                self.context = 'search:{0!s}'.format(sid)
         return self.context
 
     def load_context(self, context):

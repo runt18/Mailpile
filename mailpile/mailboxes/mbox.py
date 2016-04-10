@@ -23,7 +23,7 @@ class MailpileMailbox(mailbox.mbox):
             if create and not os.path.exists(fn):
                 return (fn, )
             pass
-        raise ValueError('Not an mbox: %s' % fn)
+        raise ValueError('Not an mbox: {0!s}'.format(fn))
 
     def __init__(self, *args, **kwargs):
         mailbox.mbox.__init__(self, *args, **kwargs)
@@ -159,7 +159,7 @@ class MailpileMailbox(mailbox.mbox):
         with self._lock:
             msg_start = self._toc[toc_id][0]
             msg_size = self.get_msg_size(toc_id)
-        return '%s%s:%s:%s' % (mboxid,
+        return '{0!s}{1!s}:{2!s}:{3!s}'.format(mboxid,
                                b36(msg_start),
                                b36(msg_size),
                                self.get_msg_cs80b(msg_start, msg_size))

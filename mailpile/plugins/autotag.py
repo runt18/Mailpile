@@ -68,7 +68,7 @@ def SaveAutoTagger(config, at_config):
     aid = at_identify(at_config)
     at = config.autotag.get(aid)
     if at and at.trained:
-        config.save_pickle(at, 'pickled-autotag.%s' % aid)
+        config.save_pickle(at, 'pickled-autotag.{0!s}'.format(aid))
 
 
 def LoadAutoTagger(config, at_config):
@@ -77,7 +77,7 @@ def LoadAutoTagger(config, at_config):
     aid = at_identify(at_config)
     at = config.autotag.get(aid)
     if aid not in config.autotag:
-        cfn = 'pickled-autotag.%s' % aid
+        cfn = 'pickled-autotag.{0!s}'.format(aid)
         try:
             config.autotag[aid] = config.load_pickle(cfn)
         except (IOError, EOFError):
@@ -169,13 +169,13 @@ class Retrain(AutoTagCommand):
         #       and guarantee these results don't corrupt the somewhat
         #       lame/broken result cache.
         #
-        no_trash = ['-in:%s' % t._key for t in config.get_tags(type='trash')]
+        no_trash = ['-in:{0!s}'.format(t._key) for t in config.get_tags(type='trash')]
         interest = {}
         for ttype in ('replied', 'fwded', 'read', 'tagged'):
             interest[ttype] = set()
             for tag in config.get_tags(type=ttype):
                 interest[ttype] |= idx.search(session,
-                                              ['in:%s' % tag.slug] + no_trash
+                                              ['in:{0!s}'.format(tag.slug)] + no_trash
                                               ).as_set()
             session.ui.notify(_('Have %d interesting %s messages'
                                 ) % (len(interest[ttype]), ttype))
@@ -185,10 +185,10 @@ class Retrain(AutoTagCommand):
         for at_config in config.prefs.autotag:
             at_tag = config.get_tag(at_config.match_tag)
             if at_tag and at_tag._key in tids:
-                session.ui.mark('Retraining: %s' % at_tag.name)
+                session.ui.mark('Retraining: {0!s}'.format(at_tag.name))
 
-                yn = [(set(), set(), 'in:%s' % at_tag.slug, True),
-                      (set(), set(), '-in:%s' % at_tag.slug, False)]
+                yn = [(set(), set(), 'in:{0!s}'.format(at_tag.slug), True),
+                      (set(), set(), '-in:{0!s}'.format(at_tag.slug), False)]
 
                 # Get the current message sets: tagged and untagged messages
                 # excluding trash.
@@ -201,7 +201,7 @@ class Retrain(AutoTagCommand):
                 for etagid in at_config.exclude_tags:
                     etag = config.get_tag(etagid)
                     if etag._key not in interest:
-                        srch = ['in:%s' % etag._key] + no_trash
+                        srch = ['in:{0!s}'.format(etag._key)] + no_trash
                         interest[etag._key] = idx.search(session, srch
                                                          ).as_set()
                     interesting.append(etag._key)
@@ -387,14 +387,14 @@ def filter_hook(session, msg_mid, msg, keywords, **kwargs):
                 if 'autotag' in config.sys.debug:
                     session.ui.debug(('Autotagging %s with %s (w=%s, i=%s)'
                                       ) % (msg_mid, at_tag.name, want, info))
-                keywords.add('%s:in' % at_tag._key)
+                keywords.add('{0!s}:in'.format(at_tag._key))
             elif at_config.unsure_tag and want is None:
                 unsure_tag = config.get_tag(at_config.unsure_tag)
                 if 'autotag' in config.sys.debug:
                     session.ui.debug(('Autotagging %s with %s (w=%s, i=%s)'
                                       ) % (msg_mid, unsure_tag.name,
                                            want, info))
-                keywords.add('%s:in' % unsure_tag._key)
+                keywords.add('{0!s}:in'.format(unsure_tag._key))
         except (KeyError, AttributeError, ValueError):
             pass
 

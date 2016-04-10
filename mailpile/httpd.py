@@ -111,7 +111,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
     def server_url(self):
         """Return the current server URL, e.g. 'http://localhost:33411/'"""
         try:
-            surl = '%s://%s' % (self.headers.get('x-forwarded-proto', 'http'),
+            surl = '{0!s}://{1!s}'.format(self.headers.get('x-forwarded-proto', 'http'),
                                 self.headers.get('host', 'localhost'))
             self.server.server_url = surl
         except AttributeError:
@@ -120,7 +120,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
     def send_http_response(self, code, msg):
         """Send the HTTP response header"""
-        self.wfile.write('HTTP/1.1 %s %s\r\n' % (code, msg))
+        self.wfile.write('HTTP/1.1 {0!s} {1!s}\r\n'.format(code, msg))
 
     def send_http_redirect(self, destination):
         self.send_http_response(302, 'Found')
@@ -189,7 +189,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         # Send all headers
         if code == 401:
             self.send_header('WWW-Authenticate',
-                             'Basic realm = MP%d' % (time.time() / 3600))
+                             'Basic realm = MP{0:d}'.format((time.time() / 3600)))
         # If suppress_body == True, we don't know the content length
         headers = []
         if not suppress_body:
@@ -211,7 +211,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         # This ETag varies by whatever args we give it (e.g. size, mtime,
         # etc), but is unique per Mailpile instance and should leak nothing
         # about the actual server configuration.
-        data = '%s-%s' % (self.server.secret, '-'.join((str(a) for a in args)))
+        data = '{0!s}-{1!s}'.format(self.server.secret, '-'.join((str(a) for a in args)))
         return hashlib.md5(data).hexdigest()
 
     def _maybe_gzip(self, data, msg_size, headers):
@@ -226,11 +226,11 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                 fd.write(data)
             gzipped = gzipped.getvalue()
             if len(data) > len(gzipped):
-                headers.extend([('Content-Length', '%s' % len(gzipped)),
-                                ('X-Full-Size', '%s' % msg_size),
+                headers.extend([('Content-Length', '{0!s}'.format(len(gzipped))),
+                                ('X-Full-Size', '{0!s}'.format(msg_size)),
                                 ('Content-Encoding', 'gzip')])
                 return gzipped, headers
-        headers.append(('Content-Length', '%s' % msg_size))
+        headers.append(('Content-Length', '{0!s}'.format(msg_size)))
         return data, headers
 
     def send_file(self, config, filename, suppress_body=False):
@@ -279,7 +279,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             #return SimpleXMLRPCRequestHandler.do_POST(self)
 
         # Update thread name for debugging purposes
-        threading.current_thread().name = 'POST:%s' % self.path.split('?')[0]
+        threading.current_thread().name = 'POST:{0!s}'.format(self.path.split('?')[0])
 
         self.session, config = self.server.session, self.server.session.config
         post_data = {}
@@ -305,7 +305,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         except (IOError, ValueError), e:
             self.send_full_response(self.server.session.ui.render_page(
                 config, self._ERROR_CONTEXT,
-                body='POST geborked: %s' % e,
+                body='POST geborked: {0!s}'.format(e),
                 title=_('Internal Error')
             ), code=500)
             return None
@@ -316,14 +316,14 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         try:
             path = self.path.split('?')[0]
 
-            threading.current_thread().name = 'WAIT:%s' % path
+            threading.current_thread().name = 'WAIT:{0!s}'.format(path)
             with BLOCK_HTTPD_LOCK:
                 LIVE_HTTP_REQUESTS += 1
 
-            threading.current_thread().name = 'WORK:%s' % path
+            threading.current_thread().name = 'WORK:{0!s}'.format(path)
             return self._real_do_GET(*args, **kwargs)
         finally:
-            threading.current_thread().name = 'DONE:%s' % path
+            threading.current_thread().name = 'DONE:{0!s}'.format(path)
             LIVE_HTTP_REQUESTS -= 1
             if mailpile.util.QUITTING:
                 self.wfile.close()
@@ -343,7 +343,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
 
         # Path manipulation...
         if path == '/favicon.ico':
-            path = '%s/static/favicon.ico' % (config.sys.http_path or '')
+            path = '{0!s}/static/favicon.ico'.format((config.sys.http_path or ''))
         if config.sys.http_path:
             if not path.startswith(config.sys.http_path):
                 self.send_full_response(_("File not found (invalid path)"),
@@ -364,7 +364,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         elif 'context' in query_data:
             session.load_context(query_data['context'][0])
 
-        mark_name = 'Processing HTTP API request at %s' % time.time()
+        mark_name = 'Processing HTTP API request at {0!s}'.format(time.time())
         session.ui.start_command(mark_name, [], {})
 
         if 'http' in config.sys.debug:
@@ -372,8 +372,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             session.ui.notify = server_session.ui.notify
             session.ui.error = server_session.ui.error
             session.ui.debug = server_session.ui.debug
-            session.ui.debug('%s: %s qs = %s post = %s'
-                             % (method, opath, query_data, post_data))
+            session.ui.debug('{0!s}: {1!s} qs = {2!s} post = {3!s}'.format(method, opath, query_data, post_data))
 
         idx = session.config.index
         if session.config.loaded_config:
@@ -385,8 +384,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
         csrf_token = security.make_csrf_token(self, http_session)
         session.ui.html_variables = {
             'csrf_token': csrf_token,
-            'csrf_field': ('<input type="hidden" name="csrf" value="%s">'
-                           % csrf_token),
+            'csrf_field': ('<input type="hidden" name="csrf" value="{0!s}">'.format(csrf_token)),
             'http_host': self.headers.get('host', 'localhost'),
             'http_hostname': self.http_host(),
             'http_method': method,
@@ -440,7 +438,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
                     else:
                         http_headers.append(('ETag', etag))
                 max_age = min(max_ages) if max_ages else 10
-                cachectrl = 'must-revalidate, no-store, max-age=%d' % max_age
+                cachectrl = 'must-revalidate, no-store, max-age={0:d}'.format(max_age)
 
             global LIVE_HTTP_REQUESTS
             hang_fix = 1 if ([1 for c in commands if c.IS_HANGING_ACTIVITY]
@@ -448,7 +446,7 @@ class HttpRequestHandler(SimpleXMLRPCRequestHandler):
             try:
                 LIVE_HTTP_REQUESTS -= hang_fix
 
-                session.ui.mark('Running %d commands' % len(commands))
+                session.ui.mark('Running {0:d} commands'.format(len(commands)))
                 results = [cmd.run() for cmd in commands]
 
                 session.ui.mark('Displaying final result')
@@ -529,7 +527,7 @@ class HttpServer(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
         session_id = None
         while session_id in self.sessions or session_id is None:
             session_id = okay_random(32, self.secret,
-                                     '%s' % (request and request.headers))
+                                     '{0!s}'.format((request and request.headers)))
         return session_id
 
     def finish_request(self, request, client_address):

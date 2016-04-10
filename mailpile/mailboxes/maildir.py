@@ -20,7 +20,7 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
                   os.path.exists(os.path.join(fn, 'cur'))) or
                  (create and not os.path.exists(fn)))):
             return (fn, )
-        raise ValueError('Not a Maildir: %s' % fn)
+        raise ValueError('Not a Maildir: {0!s}'.format(fn))
 
     def _refresh(self):
         with self._lock:
@@ -34,7 +34,7 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
         if self.colon in name:
             flags = name.split(self.colon)[-1]
             if flags[:2] == '2,':
-                return ['%s:maildir' % c for c in flags[2:]]
+                return ['{0!s}:maildir'.format(c) for c in flags[2:]]
         return []
 
 

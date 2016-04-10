@@ -103,13 +103,13 @@ class UrlMap:
                      if ((method and name == c.SYNOPSIS[2]) or
                          (not method and name == c.SYNOPSIS[1]))]
             if len(match) != 1:
-                raise UsageError('Unknown command: %s' % name)
+                raise UsageError('Unknown command: {0!s}'.format(name))
         except ValueError, e:
             raise UsageError(str(e))
         command = match[0]
 
         if method and (method not in command.HTTP_CALLABLE):
-            raise BadMethodError('Invalid method (%s): %s' % (method, name))
+            raise BadMethodError('Invalid method ({0!s}): {1!s}'.format(method, name))
 
         # FIXME: Move this somewhere smarter
         SPECIAL_VARS = ('csrf', 'arg', 'context')
@@ -126,7 +126,7 @@ class UrlMap:
                 if (var not in command.HTTP_QUERY_VARS and
                         (var not in SPECIAL_VARS) and
                         (not [v for v in prefixes if var.startswith(v)])):
-                    raise BadDataError('Bad variable (%s): %s' % (var, name))
+                    raise BadDataError('Bad variable ({0!s}): {1!s}'.format(var, name))
                 else:
                     copy_q.append(var)
 
@@ -137,7 +137,7 @@ class UrlMap:
                         (var not in command.HTTP_POST_VARS) and
                         (var not in SPECIAL_VARS) and
                         (not [v for v in prefixes if var.startswith(v)])):
-                    raise BadDataError('Bad variable (%s): %s' % (var, name))
+                    raise BadDataError('Bad variable ({0!s}): {1!s}'.format(var, name))
                 else:
                     copy_p.append(var)
 
@@ -149,7 +149,7 @@ class UrlMap:
                 var = var.replace('[]', '')
                 if ((query_data and var in query_data) or
                         (post_data and var in post_data)):
-                    raise BadDataError('Bad variable (%s): %s' % (var, name))
+                    raise BadDataError('Bad variable ({0!s}): {1!s}'.format(var, name))
 
             copy_vars = (((query_data or {}).keys(), query_data),
                          ((post_data or {}).keys(), post_data),
@@ -220,12 +220,12 @@ class UrlMap:
                 for suffix in self.OUTPUT_SUFFIXES:
                     if fn.endswith(suffix) or suffix == ('.' + fn):
                         return self._command('output', [om], method=False)
-            raise UsageError('Invalid output format: %s' % om)
+            raise UsageError('Invalid output format: {0!s}'.format(om))
         return self._command('output', [fmt], method=False)
 
     def _map_root(self, request, path_parts, query_data, post_data):
         """Redirects to /profiles/ for now.  (FIXME)"""
-        destination = '%s/profiles/' % self.config.sys.http_path
+        destination = '{0!s}/profiles/'.format(self.config.sys.http_path)
         return [UrlRedirect(self.session, 'redirect', arg=[destination])]
 
     def _map_tag(self, request, path_parts, query_data, post_data):
@@ -250,7 +250,7 @@ class UrlMap:
         tag_slug = '/'.join([p for p in path_parts[1:] if p])
         tag = self.config.get_tag(tag_slug)
         tag_search = [term for term in (tag.search_terms % tag).split()
-                      if term] if tag is not None else ["in:%s" % tag_slug]
+                      if term] if tag is not None else ["in:{0!s}".format(tag_slug)]
         if tag is not None and tag.search_order and 'order' not in query_data:
             query_data['order'] = [tag.search_order]
 
@@ -320,7 +320,7 @@ class UrlMap:
                 pass
             except BadMethodError:
                 break
-        raise UsageError('Not available for %s: %s' % (method,
+        raise UsageError('Not available for {0!s}: {1!s}'.format(method,
                                                        '/'.join(path_parts)))
 
     MAP_API = 'api'
@@ -383,8 +383,8 @@ class UrlMap:
         else:
             sid = user_session = None
 
-        is_async = path.startswith('/%s/' % self.MAP_ASYNC_API)
-        is_api = path.startswith('/%s/' % self.MAP_API)
+        is_async = path.startswith('/{0!s}/'.format(self.MAP_ASYNC_API))
+        is_api = path.startswith('/{0!s}/'.format(self.MAP_API))
 
         if authenticate:
             def auth(commands, user_session):
@@ -422,7 +422,7 @@ class UrlMap:
         if is_api or is_async:
             path_parts = path.split('/')
             if int(path_parts[2]) not in self.API_VERSIONS:
-                raise UsageError('Unknown API level: %s' % path_parts[2])
+                raise UsageError('Unknown API level: {0!s}'.format(path_parts[2]))
             return auth(self._map_api_command(method, path_parts[3:],
                                               query_data, post_data,
                                               fmt='json', async=is_async),
@@ -449,21 +449,21 @@ class UrlMap:
 
     def _url(self, url, output='', qs=''):
         if output and '.' not in output:
-            output = 'as.%s' % output
+            output = 'as.{0!s}'.format(output)
         return ''.join([self.config.sys.http_path,
                         url, output, qs and '?' or '', qs])
 
     def url_thread(self, message_id, output=''):
         """Map a message to it's short-hand thread URL."""
-        return self._url('/thread/=%s/' % message_id, output)
+        return self._url('/thread/={0!s}/'.format(message_id), output)
 
     def url_source(self, message_id, output=''):
         """Map a message to it's raw message source URL."""
-        return self._url('/message/raw/=%s/as.text' % message_id, output)
+        return self._url('/message/raw/={0!s}/as.text'.format(message_id), output)
 
     def url_edit(self, message_id, output=''):
         """Map a message to it's short-hand editing URL."""
-        return self._url('/message/draft/=%s/' % message_id, output)
+        return self._url('/message/draft/={0!s}/'.format(message_id), output)
 
     def redirect_to_auth_or_setup(self, method, path, query_data, setup=True):
         """Redirect to the /auth/ or a /setup/* endpoint"""
@@ -480,9 +480,9 @@ class UrlMap:
             nxt = Setup.Next(self.session.config, mailpile.auth.Authenticate)
             if nxt.HTTP_AUTH_REQUIRED is True:
                 nxt = mailpile.auth.Authenticate
-            path = '/%s/' % nxt.SYNOPSIS[2]
+            path = '/{0!s}/'.format(nxt.SYNOPSIS[2])
         else:
-            path = '/%s/' % mailpile.auth.Authenticate.SYNOPSIS[2]
+            path = '/{0!s}/'.format(mailpile.auth.Authenticate.SYNOPSIS[2])
 
         raise UrlRedirectException(self._url(path, qs=urlencode(qd)))
 
@@ -516,8 +516,8 @@ class UrlMap:
                    if t.slug == tag_id.lower()]
             tag = tag and tag[0]
         if tag:
-            return self._url('/in/%s/' % tag.slug, output)
-        raise ValueError('Unknown tag: %s' % tag_id)
+            return self._url('/in/{0!s}/'.format(tag.slug), output)
+        raise ValueError('Unknown tag: {0!s}'.format(tag_id))
 
     def url_sent(self, output=''):
         """Return the URL of the Sent tag"""
@@ -555,16 +555,16 @@ class UrlMap:
 
     def canonical_url(self, cls):
         """Return the full versioned URL for a command"""
-        return '/api/%s/%s/' % (cls.API_VERSION or self.API_VERSIONS[-1],
+        return '/api/{0!s}/{1!s}/'.format(cls.API_VERSION or self.API_VERSIONS[-1],
                                 cls.SYNOPSIS[2])
 
     def ui_url(self, cls):
         """Return the full user-facing URL for a command"""
-        return '/%s/' % cls.SYNOPSIS[2]
+        return '/{0!s}/'.format(cls.SYNOPSIS[2])
 
     def context_url(self, cls):
         """Return the UI context URL for a command"""
-        return '/%s/' % (cls.UI_CONTEXT or cls.SYNOPSIS[2])
+        return '/{0!s}/'.format((cls.UI_CONTEXT or cls.SYNOPSIS[2]))
 
     def map_as_markdown(self, prefix=None):
         """Describe the current URL map as markdown"""
@@ -577,21 +577,21 @@ class UrlMap:
                            for c in self._api_commands(method, strict=True)])
 
         text.extend([
-            '# Mailpile URL map (autogenerated by %s)' % __file__,
+            '# Mailpile URL map (autogenerated by {0!s})'.format(__file__),
             '',
             '\n'.join([line.strip() for line
                        in UrlMap.__doc__.strip().splitlines()[2:]]),
             '',
-            '## The API paths (version=%s, JSON output)' % api_version,
+            '## The API paths (version={0!s}, JSON output)'.format(api_version),
             '',
         ])
-        api = '/api/%s' % api_version
+        api = '/api/{0!s}'.format(api_version)
         for method in ('GET', 'POST', 'UPDATE', 'DELETE'):
             commands = [c for c in cmds(method)
                         if not prefix or (c[0] and c[0].startswith(prefix))]
             if commands:
                 text.extend([
-                    '### %s%s' % (method, method == 'GET' and
+                    '### {0!s}{1!s}'.format(method, method == 'GET' and
                                   ' (also accept POST)' or ''),
                     '',
                 ])
@@ -605,21 +605,21 @@ class UrlMap:
                 padding = ' ' * (18 - len(command[0]))
                 newline = '\n' + ' ' * (len(api) + len(command[0]) + 6)
                 if query_vars:
-                    qs = '?' + '&'.join(['%s=[%s]' % (v, query_vars[v])
+                    qs = '?' + '&'.join(['{0!s}=[{1!s}]'.format(v, query_vars[v])
                                          for v in query_vars])
                 else:
                     qs = ''
                 if qs:
-                    qs = '%s%s' % (padding, qs)
+                    qs = '{0!s}{1!s}'.format(padding, qs)
                 if pos_args:
-                    pos_args = '%s%s/' % (padding, pos_args)
+                    pos_args = '{0!s}{1!s}/'.format(padding, pos_args)
                     if qs:
                         qs = newline + qs
-                text.append('    %s%s%s' % (url, pos_args, qs))
+                text.append('    {0!s}{1!s}{2!s}'.format(url, pos_args, qs))
                 if cls.HTTP_POST_VARS:
-                    ps = '&'.join(['%s=[%s]' % (v, cls.HTTP_POST_VARS[v])
+                    ps = '&'.join(['{0!s}=[{1!s}]'.format(v, cls.HTTP_POST_VARS[v])
                                    for v in cls.HTTP_POST_VARS])
-                    text.append('    ... POST only: %s' % ps)
+                    text.append('    ... POST only: {0!s}'.format(ps))
             text.append('')
 
         if not prefix:
@@ -630,8 +630,8 @@ class UrlMap:
             ])
             for path in sorted(self.MAP_PATHS.keys()):
                 doc = self.MAP_PATHS[path].__doc__.strip().split('\n')[0]
-                path = ('/%s/' % path).replace('//', '/')
-                text.append('    %s %s %s' % (path, ' ' * (10 - len(path)), doc))
+                path = ('/{0!s}/'.format(path)).replace('//', '/')
+                text.append('    {0!s} {1!s} {2!s}'.format(path, ' ' * (10 - len(path)), doc))
 
         text.extend([
             '',
@@ -643,7 +643,7 @@ class UrlMap:
         for command in sorted(list(set(cmds('GET') + cmds('POST')))):
             if prefix and not command[0].startswith(prefix):
                 continue
-            text.append('    /%s/' % (command[0], ))
+            text.append('    /{0!s}/'.format(command[0] ))
         text.append('')
         return '\n'.join(text)
 
@@ -696,7 +696,7 @@ class HelpUrlMap(Command):
             except:
                 import traceback
                 print traceback.format_exc()
-                html = '<pre>%s</pre>' % escape_html(self.result['urlmap'])
+                html = '<pre>{0!s}</pre>'.format(escape_html(self.result['urlmap']))
             self.result['markdown'] = html
             return Command.CommandResult.as_html(self, *args, **kwargs)
 
@@ -738,7 +738,7 @@ else:
         results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                                   extraglobs={'urlmap': urlmap,
                                               'request': None})
-        print '%s' % (results, )
+        print '{0!s}'.format(results )
         if results.failed:
             sys.exit(1)
     else:

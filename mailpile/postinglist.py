@@ -151,7 +151,7 @@ class PostingListContainer(object):
                                         delimited=False,
                                         dir=self.config.tempfile_dir(),
                                         header_data={'subject': subj},
-                                        name='PLC/%s' % self.sig) as fd:
+                                        name='PLC/{0!s}'.format(self.sig)) as fd:
                     fd.write(output)
                     fd.save(outfile)
             else:
@@ -218,8 +218,7 @@ class PostingListContainer(object):
                                         self.config)
                 self.changes = 0
             except (ValueError, IOError):
-                self.session.ui.warning('load(%s) %s'
-                                        % (self.sig, sys.exc_info()))
+                self.session.ui.warning('load({0!s}) {1!s}'.format(self.sig, sys.exc_info()))
                 if self.config.sys.debug:
                     traceback.print_exc()
         self.fd = None
@@ -339,7 +338,7 @@ class OldPostingList(object):
                     break
                 filesize = os.path.getsize(os.path.join(postinglist_dir, fn))
                 if force or (filesize > 900 * postinglist_kb):
-                    session.ui.mark('Pass 1: Compacting >%s<' % fn)
+                    session.ui.mark('Pass 1: Compacting >{0!s}<'.format(fn))
                     play_nice_with_threads()
                     with GLOBAL_POSTING_LOCK:
                         # FIXME: Remove invalid and deleted messages from
@@ -361,7 +360,7 @@ class OldPostingList(object):
                 size += os.path.getsize(os.path.join(postinglist_dir, fnp))
                 if (fnp and
                     size < (1024 * postinglist_kb - (cls.HASH_LEN * 6))):
-                    session.ui.mark('Pass 2: Merging %s into %s' % (fn, fnp))
+                    session.ui.mark('Pass 2: Merging {0!s} into {1!s}'.format(fn, fnp))
                     play_nice_with_threads()
                     try:
                         GLOBAL_POSTING_LOCK.acquire()
@@ -381,7 +380,7 @@ class OldPostingList(object):
         filecount = 0
         for c in cls.CHARACTERS:
             filecount += len(os.listdir(session.config.postinglist_dir(c)))
-        session.ui.mark('Optimized %s posting lists' % filecount)
+        session.ui.mark('Optimized {0!s} posting lists'.format(filecount))
         return filecount
 
     @classmethod
@@ -404,11 +403,10 @@ class OldPostingList(object):
                         break
                 if fd:
                     with fd:
-                        fd.write('%s\t%s\n' % (sig, '\t'.join(mail_ids)))
+                        fd.write('{0!s}\t{1!s}\n'.format(sig, '\t'.join(mail_ids)))
                         return
             except IOError:
-                print ('RETRY: APPEND(compact=%s, %s, %s) %s'
-                       % (compact, fn_path, fd, sys.exc_info()))
+                print ('RETRY: APPEND(compact={0!s}, {1!s}, {2!s}) {3!s}'.format(compact, fn_path, fd, sys.exc_info()))
                 time.sleep(0.2)
                 fd = None
 
@@ -493,18 +491,17 @@ class OldPostingList(object):
                 self.size = 0
                 decrypt_and_parse_lines(fd, self._parse_lines, self.config)
             except (ValueError, IOError):
-                self.session.ui.warning('load(%s) %s'
-                                        % (self.filename, sys.exc_info()))
+                self.session.ui.warning('load({0!s}) {1!s}'.format(self.filename, sys.exc_info()))
 
     def _fmt_file(self, prefix):
         output = []
-        self.session.ui.mark('Formatting prefix %s' % unicode(prefix))
+        self.session.ui.mark('Formatting prefix {0!s}'.format(unicode(prefix)))
         for word in self.WORDS.keys():
             data = self.WORDS.get(word, [])
             if ((prefix == 'ALL' or word.startswith(prefix))
                     and len(data) > 0):
                 output.append(('%s\t%s\n'
-                               ) % (word, '\t'.join(['%s' % x for x in data])))
+                               ) % (word, '\t'.join(['{0!s}'.format(x) for x in data])))
         play_nice_with_threads(weak=True)
         return ''.join(output)
 
@@ -534,7 +531,7 @@ class OldPostingList(object):
                 prefix, output = self._compact(prefix, output)
             try:
                 outfile = self.SaveFile(self.session, prefix)
-                self.session.ui.mark('Writing %d bytes to %s' % (len(output),
+                self.session.ui.mark('Writing {0:d} bytes to {1!s}'.format(len(output),
                                                                  outfile))
                 if output:
                     if self.config.prefs.encrypt_index:
@@ -552,7 +549,7 @@ class OldPostingList(object):
                 elif os.path.exists(outfile):
                     os.remove(outfile)
             except:
-                self.session.ui.warning('%s=>%s' % (outfile, sys.exc_info(),))
+                self.session.ui.warning('{0!s}=>{1!s}'.format(outfile, sys.exc_info()))
             return 0
 
     def hits(self):

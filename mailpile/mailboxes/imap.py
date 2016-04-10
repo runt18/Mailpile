@@ -123,7 +123,7 @@ class MailpileMailbox(UnorderedPicklable(IMAPMailbox)):
             user, password = userpart.split(":")
             # WARNING: Order must match IMAPMailbox.__init__(...)
             return (server, 993, user, password)
-        raise ValueError('Not an IMAP url: %s' % path)
+        raise ValueError('Not an IMAP url: {0!s}'.format(path))
 
     def get_msg_size(self, toc_id):
         # FIXME: We should make this less horrible.

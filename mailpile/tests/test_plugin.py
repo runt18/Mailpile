@@ -25,7 +25,7 @@ class PluginTest(MailPileUnittest):
     def test_code_files_are_loaded_in_order(self):
         # given
         def create_python_file_add_stmt(number, filename):
-            self._create_code_file('from mailpile.plugins.order import add\nadd(%d)' % number, path.join(order_plugin_path, filename))
+            self._create_code_file('from mailpile.plugins.order import add\nadd({0:d})'.format(number), path.join(order_plugin_path, filename))
 
         order_plugin_path = path.join(self.plugin_dir, 'order')
         os.mkdir(order_plugin_path)

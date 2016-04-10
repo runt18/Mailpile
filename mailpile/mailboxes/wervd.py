@@ -26,7 +26,7 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
                   os.path.exists(os.path.join(fn, 'wervd.ver'))) or
                  (create and not os.path.exists(fn)))):
             return (fn, )
-        raise ValueError('Not a Mailpile Maildir: %s' % fn)
+        raise ValueError('Not a Mailpile Maildir: {0!s}'.format(fn))
 
     def __init2__(self, *args, **kwargs):
         open(os.path.join(self._path, 'wervd.ver'), 'w+b').write('0')
@@ -77,7 +77,7 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
         if self.colon in name:
             flags = name.split(self.colon)[-1]
             if flags[:2] == '2,':
-                return ['%s:maildir' % c for c in flags[2:]]
+                return ['{0!s}:maildir'.format(c) for c in flags[2:]]
         return []
 
     def set_metadata_keywords(self, toc_id, kws):
@@ -87,7 +87,7 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
 
             flags = ''.join(sorted([k[0] for k in kws]))
             if flags:
-                new_fpath += '%s2,%s' % (self.colon, flags)
+                new_fpath += '{0!s}2,{1!s}'.format(self.colon, flags)
                 if new_fpath != old_fpath:
                     os.rename(os.path.join(self._path, old_fpath),
                               os.path.join(self._path, new_fpath))
@@ -124,7 +124,7 @@ class MailpileMailbox(UnorderedPicklable(mailbox.Maildir, editable=True)):
                                                    'for the message.'))
 
             for cpn in range(1, copies):
-                fn = os.path.join(self._path, 'new', '%s.%s' % (key, cpn))
+                fn = os.path.join(self._path, 'new', '{0!s}.{1!s}'.format(key, cpn))
                 with mailbox._create_carefully(fn) as ofd:
                     es.save_copy(ofd)
 

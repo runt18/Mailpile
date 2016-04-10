@@ -121,7 +121,7 @@ class md5sumWordyView(md5sumCommand):
     """Represent MD5 sums in a more wordy way."""
     @classmethod
     def view(cls, result):
-        return 'MD5:%s' % result
+        return 'MD5:{0!s}'.format(result)
 
 
 def on_plugin_start(config):

@@ -44,7 +44,7 @@ class BaseMailSource(threading.Thread):
             MailpileVfsBase.__init__(self, *args, **kwargs)
             self.config = config
             self.source = source
-            self.root = FilePath('/src:%s' % self.source.my_config._key)
+            self.root = FilePath('/src:{0!s}'.format(self.source.my_config._key))
 
         def _get_mbox_id(self, path):
             return path[len(self.root.raw_fp)+1:]
@@ -72,7 +72,7 @@ class BaseMailSource(threading.Thread):
                 mbox_id = self._get_mbox_id(path)
                 return self.config.sys.mailbox[mbox_id]
             except (ValueError, KeyError, IndexError):
-                raise OSError('Not found: %s' % path)
+                raise OSError('Not found: {0!s}'.format(path))
 
         def isdir_(self, fp):
             return (self.root == fp)
@@ -94,7 +94,7 @@ class BaseMailSource(threading.Thread):
                 mbox_id = self._get_mbox_id(path)
                 return self.source.my_config.mailbox[mbox_id].name
             except (ValueError, KeyError, IndexError):
-                raise OSError('Not found: %s' % path)
+                raise OSError('Not found: {0!s}'.format(path))
 
         def exists_(self, fp):
             return ((self.root == fp) or
@@ -127,11 +127,11 @@ class BaseMailSource(threading.Thread):
     def __str__(self):
         rv = ': '.join([threading.Thread.__str__(self), self._state])
         if self._sleeping > 0:
-            rv += '(%s)' % self._sleeping
+            rv += '({0!s})'.format(self._sleeping)
         return rv
 
     def _pfn(self):
-        return 'mail-source.%s' % self.my_config._key
+        return 'mail-source.{0!s}'.format(self.my_config._key)
 
     def _load_state(self):
         with self._lock:
@@ -167,25 +167,23 @@ class BaseMailSource(threading.Thread):
         self.session.config.event_log.log_event(self.event)
         self.session.ui.mark(message)
         if 'sources' in self.session.config.sys.debug:
-            self.session.ui.debug('%s: %s' % (self, message))
+            self.session.ui.debug('{0!s}: {1!s}'.format(self, message))
 
     def open(self):
         """Open mailboxes or connect to the remote mail source."""
-        raise NotImplemented('Please override open in %s' % self)
+        raise NotImplemented('Please override open in {0!s}'.format(self))
 
     def close(self):
         """Close mailboxes or disconnect from the remote mail source."""
-        raise NotImplemented('Please override open in %s' % self)
+        raise NotImplemented('Please override open in {0!s}'.format(self))
 
     def _has_mailbox_changed(self, mbx, state):
         """For the default sync_mail routine, report if mailbox changed."""
-        raise NotImplemented('Please override _has_mailbox_changed in %s'
-                             % self)
+        raise NotImplemented('Please override _has_mailbox_changed in {0!s}'.format(self))
 
     def _mark_mailbox_rescanned(self, mbx, state):
         """For the default sync_mail routine, note mailbox was rescanned."""
-        raise NotImplemented('Please override _mark_mailbox_rescanned in %s'
-                             % self)
+        raise NotImplemented('Please override _mark_mailbox_rescanned in {0!s}'.format(self))
 
     def _path(self, mbx):
         if mbx.path.startswith('@'):
@@ -478,7 +476,7 @@ class BaseMailSource(threading.Thread):
         with self._lock:
             mailbox_idx = FormatMbxId(mailbox_idx)
             self.my_config.mailbox[mailbox_idx] = {
-                'path': '@%s' % mailbox_idx,
+                'path': '@{0!s}'.format(mailbox_idx),
                 'policy': policy or 'inherit',
                 'process_new': disco_cfg.process_new,
                 'local': '!CREATE' if create_local else '',
@@ -609,7 +607,7 @@ class BaseMailSource(threading.Thread):
                     visible=(disco_cfg.visible_tags if (visible is None)
                              else visible),
                     label=as_label,
-                    slug='mailbox-%s' % mbx_cfg._key,
+                    slug='mailbox-{0!s}'.format(mbx_cfg._key),
                     unique=False,
                     parent=parent)
             except (ValueError, IndexError):
@@ -638,7 +636,7 @@ class BaseMailSource(threading.Thread):
             return tagname
         tagnameN, count = tagname, 2
         while self.session.config.get_tags(tagnameN):
-            tagnameN = '%s (%s)' % (tagname, count)
+            tagnameN = '{0!s} ({1!s})'.format(tagname, count)
             count += 1
         return tagnameN
 
@@ -802,7 +800,7 @@ class BaseMailSource(threading.Thread):
                                 if self._policy(m) not in ('ignore',
                                                            'unknown')]))
         try:
-            ostate, self._state = self._state, 'Rescan(%s, %s)' % (mbx_key,
+            ostate, self._state = self._state, 'Rescan({0!s}, {1!s})'.format(mbx_key,
                                                                    stop_after)
 
             with self._lock:
@@ -1002,7 +1000,7 @@ def ProcessNew(session, msg, msg_metadata_kws, msg_ts, keywords, snippet):
             or 'r' in msg.get('status', '').lower()      # Read, mbox
             or 'a' in msg.get('sx-tatus', '').lower()):  # PINE, answered
         return False
-    keywords.update(['%s:in' % tag._key for tag in
+    keywords.update(['{0!s}:in'.format(tag._key) for tag in
                      session.config.get_tags(type='unread')])
     return True
 

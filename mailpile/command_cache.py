@@ -56,7 +56,7 @@ class CommandCache(object):
             #       for refreshing.
             self.cache[str(fprint)] = [expires, req, ss, cmd_obj, result_obj,
                                        time.time()]
-            self.debug('Cached %s, req=%s' % (fprint, sorted(list(req))))
+            self.debug('Cached {0!s}, req={1!s}'.format(fprint, sorted(list(req))))
 
     def get_result(self, fprint, dirty_check=True, extend=300):
         with self.lock:
@@ -67,12 +67,11 @@ class CommandCache(object):
             if recent or dirty:
                 # If item is too new, or requirements are dirty, pretend this
                 # item does not exist.
-                self.debug('Suppressing cache result %s, recent=%s dirty=%s'
-                           % (fprint, recent, sorted(list(dirty))))
+                self.debug('Suppressing cache result {0!s}, recent={1!s} dirty={2!s}'.format(fprint, recent, sorted(list(dirty))))
                 raise KeyError(fprint)
         match[0] = time.time() + extend
         co.session = result_obj.session = ss
-        self.debug('Returning cached result for %s' % fprint)
+        self.debug('Returning cached result for {0!s}'.format(fprint))
         return result_obj
 
     def dirty_set(self, after=0):
@@ -86,7 +85,7 @@ class CommandCache(object):
     def mark_dirty(self, requirements):
         with self.lock:
             self.dirty.append((time.time(), set(requirements)))
-        self.debug('Marked dirty: %s' % sorted(list(requirements)))
+        self.debug('Marked dirty: {0!s}'.format(sorted(list(requirements))))
 
     def refresh(self, extend=0, runtime=5, event_log=None):
         if mailpile.util.LIVE_USER_ACTIVITIES > 0:
@@ -144,7 +143,7 @@ class CommandCache(object):
                           source=self,
                           data={'cache_ids': refreshed},
                           flags=Event.COMPLETE)
-            self.debug('Refreshed: %s' % refreshed)
+            self.debug('Refreshed: {0!s}'.format(refreshed))
 
 
 class Cached(Command):

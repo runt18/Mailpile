@@ -23,7 +23,7 @@ def search(config, idx, term, hits):
                 emails.append(email.lower())
     fromto = term.startswith('group:') and 'from' or 'to'
     for email in set(emails):
-        rt.extend(hits('%s:%s' % (email, fromto)))
+        rt.extend(hits('{0!s}:{1!s}'.format(email, fromto)))
     return rt
 
 _plugins.register_search_term('group', search)
@@ -51,16 +51,16 @@ def GroupVCard(parent):
         def _prepare_new_vcard(self, vcard):
             session, handle = self.session, vcard.nickname
             return (AddTag(session, arg=[handle]).run() and
-                    Filter(session, arg=['add', 'group:%s' % handle,
-                                         '+%s' % handle, vcard.fn]).run())
+                    Filter(session, arg=['add', 'group:{0!s}'.format(handle),
+                                         '+{0!s}'.format(handle), vcard.fn]).run())
 
         def _add_from_messages(self):
-            raise ValueError('Invalid group ids: %s' % self.args)
+            raise ValueError('Invalid group ids: {0!s}'.format(self.args))
 
         def _pre_delete_vcard(self, vcard):
             session, handle = self.session, vcard.nickname
             return (Filter(session, arg=['delete',
-                                         'group:%s' % handle]).run() and
+                                         'group:{0!s}'.format(handle)]).run() and
                     DeleteTag(session, arg=[handle]).run())
 
     return GroupVCardCommand

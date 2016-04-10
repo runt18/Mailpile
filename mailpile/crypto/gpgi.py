@@ -1259,7 +1259,7 @@ class GnuPG:
         res = {}
         keys = self.list_keys(selectors=[address])
         for key, props in keys.iteritems():
-            if any([x["email"] == address for x in props["uids"]]):
+            if any( x["email"] == address for x in props["uids"]):
                 res[key] = props
 
         return res

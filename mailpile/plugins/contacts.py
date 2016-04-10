@@ -612,7 +612,7 @@ class ContactImport(Command):
 
         importer = PluginManager.CONTACT_IMPORTERS[format]
 
-        if not all([x in kwargs.keys() for x in importer.required_parameters]):
+        if not all( x in kwargs.keys() for x in importer.required_parameters):
             session.ui.error(
                 _("Required parameter missing. Required parameters "
                   "are: %s") % ", ".join(importer.required_parameters))
@@ -620,7 +620,7 @@ class ContactImport(Command):
 
         allparams = importer.required_parameters + importer.optional_parameters
 
-        if not all([x in allparams for x in kwargs.keys()]):
+        if not all( x in allparams for x in kwargs.keys()):
             session.ui.error(
                 _("Unknown parameter passed to importer. "
                   "Provided %s; but known parameters are: %s"

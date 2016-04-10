@@ -366,9 +366,9 @@ class TestableWebbable(SetupMagic):
 
     def _advance(self):
         path = self.data.get('_path', [None])[0]
-        data = dict([(k, v) for k, v in self.data.iteritems()
+        data = {k: v for k, v in self.data.iteritems()
                      if k not in self.HTTP_POST_VARS
-                     and k not in ('_method',)])
+                     and k not in ('_method',)}
 
         nxt = Setup.Next(self.session.config, None, needed_auth=False)
         if nxt:

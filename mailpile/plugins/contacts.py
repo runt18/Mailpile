@@ -700,7 +700,7 @@ class AddressSearch(VCardCommand):
         return addresses.values()
 
     def _index_addresses(self, cfg, terms, vcard_addresses, count, deadline):
-        existing = dict([(k['address'].lower(), k) for k in vcard_addresses])
+        existing = {k['address'].lower(): k for k in vcard_addresses}
         index = self._idx()
 
         # Figure out which tags are invisible so we can skip messages marked

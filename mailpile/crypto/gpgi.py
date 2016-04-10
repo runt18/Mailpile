@@ -548,7 +548,7 @@ class GnuPG:
     def run(self,
             args=None, gpg_input=None, outputfd=None, partial_read_ok=False,
             send_passphrase=False, _raise=None):
-        self.outputbuffers = dict([(x, []) for x in self.outputfds])
+        self.outputbuffers = {x: [] for x in self.outputfds}
         self.threads = {}
 
         args = args[:] if args else []

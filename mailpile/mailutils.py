@@ -673,8 +673,8 @@ class Email(object):
         body_lines = []
 
         # We care about header order and such things...
-        hdrs = dict([(h.lower(), h) for h in tree['headers'].keys()
-                     if h.lower() not in self.UNEDITABLE_HEADERS])
+        hdrs = {h.lower(): h for h in tree['headers'].keys()
+                     if h.lower() not in self.UNEDITABLE_HEADERS}
         for mandate in self.MANDATORY_HEADERS:
             hdrs[mandate.lower()] = hdrs.get(mandate.lower(), mandate)
         keys = hdrs.keys()

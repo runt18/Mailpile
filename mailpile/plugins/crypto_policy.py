@@ -219,8 +219,8 @@ class CryptoPolicy(CryptoPolicyBaseAction):
           'crypto-format': cformat,
           'send-keys': ('send_keys' in cformat and
                         cls.ShouldAttachKey(config, vcards=vcards)),
-          'addresses': dict([(e, AddressInfo(e, vc.fn if vc else e, vcard=vc))
-                             for vc, k, e, p, f in policies if vc])
+          'addresses': {e: AddressInfo(e, vc.fn if vc else e, vcard=vc)
+                             for vc, k, e, p, f in policies if vc}
         }
 
     def command(self):

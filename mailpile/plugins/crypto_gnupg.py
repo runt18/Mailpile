@@ -54,11 +54,11 @@ class ContentTxf(EmailTransform):
             # This is a fallback: this shouldn't happen much in normal use
             try:
                 gnupg = gnupg or GnuPG(self.config, event=GetThreadEvent())
-                seckeys = dict([(uid["email"], fp) for fp, key
+                seckeys = {uid["email"]: fp for fp, key
                                 in gnupg.list_secret_keys().iteritems()
                                 if key["capabilities_map"].get("encrypt")
                                 and key["capabilities_map"].get("sign")
-                                for uid in key["uids"]])
+                                for uid in key["uids"]}
                 sender_keyid = seckeys.get(sender)
             except (KeyError, TypeError, IndexError, ValueError):
                 traceback.print_exc()

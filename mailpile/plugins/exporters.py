@@ -35,7 +35,7 @@ class ExportMail(Command):
 
     def export_path(self, mbox_type):
         if mbox_type == 'mbox':
-            return 'mailpile-%d.mbx' % time.time()
+            return 'mailpile-{0:d}.mbx'.format(time.time())
         else:
             return 'mailpile-%d'
 
@@ -44,8 +44,7 @@ class ExportMail(Command):
             return mailbox.mbox(path)
         elif mbox_type == 'maildir':
             return mailbox.Maildir(path)
-        raise UsageError('Invalid mailbox type: %s (must be mbox or maildir)'
-                         % mbox_type)
+        raise UsageError('Invalid mailbox type: {0!s} (must be mbox or maildir)'.format(mbox_type))
 
     def command(self, save=True):
         session, config, idx = self.session, self.session.config, self._idx()
@@ -66,7 +65,7 @@ class ExportMail(Command):
                 notags = True
 
         if os.path.exists(path):
-            return self._error('Already exists: %s' % path)
+            return self._error('Already exists: {0!s}'.format(path))
 
         msg_idxs = list(self._choose_messages(args))
         if not msg_idxs:

@@ -186,7 +186,7 @@ def MakeContentID():
     with GLOBAL_CONTENT_ID_LOCK:
         GLOBAL_CONTENT_ID += 1
         GLOBAL_CONTENT_ID %= 0xfffffff
-        return '%x' % GLOBAL_CONTENT_ID
+        return '{0:x}'.format(GLOBAL_CONTENT_ID)
 
 
 GLOBAL_PARSE_CACHE_LOCK = MboxLock()
@@ -537,7 +537,7 @@ class Email(object):
             from_email = from_profile.get('email', None)
             from_name = from_profile.get('name', None)
             if from_email and from_name:
-                msg_from = '%s <%s>' % (from_name, from_email)
+                msg_from = '{0!s} <{1!s}>'.format(from_name, from_email)
         if not msg_from:
             raise NoFromAddressError()
 
@@ -562,7 +562,7 @@ class Email(object):
 
         sig = from_profile.get('signature')
         if sig and ('\n-- \n' not in (msg_text or '')):
-            msg_text = (msg_text or '\n\n') + ('\n\n-- \n%s' % sig)
+            msg_text = (msg_text or '\n\n') + ('\n\n-- \n{0!s}'.format(sig))
 
         if msg_text:
             try:
@@ -658,7 +658,7 @@ class Email(object):
                                                   CleanText.FS)).clean):
                 aid = cid
             else:
-                aid = 'part:%s' % att['count']
+                aid = 'part:{0!s}'.format(att['count'])
         return aid
 
     def get_editing_strings(self, tree=None, build_tree=True):
@@ -692,7 +692,7 @@ class Email(object):
             elif lhdr in lowman:
                 strings[lhdr] = unicode(data)
             else:
-                header_lines.append(unicode('%s: %s' % (hdr, data)))
+                header_lines.append(unicode('{0!s}: {1!s}'.format(hdr, data)))
 
         for att in tree['attachments']:
             aid = self._attachment_aid(att)
@@ -724,12 +724,11 @@ class Email(object):
 
         bits = [estrings['headers']] if estrings['headers'] else []
         for mh in self.MANDATORY_HEADERS:
-            bits.append('%s: %s' % (mh, estrings[mh.lower()]))
+            bits.append('{0!s}: {1!s}'.format(mh, estrings[mh.lower()]))
 
         if attachment_headers:
             for aid in sorted(estrings['attachments'].keys()):
-                bits.append('Attachment-%s: %s'
-                            % (aid, estrings['attachments'][aid]))
+                bits.append('Attachment-{0!s}: {1!s}'.format(aid, estrings['attachments'][aid]))
         bits.append('')
         bits.append(estrings['body'])
         return '\n'.join(bits)
@@ -831,7 +830,7 @@ class Email(object):
             if attachments:
                 oldtree = self.get_message_tree(want=['attachments'])
                 for att in oldtree['attachments']:
-                    hdr = 'Attachment-%s' % self._attachment_aid(att)
+                    hdr = 'Attachment-{0!s}'.format(self._attachment_aid(att))
                     if hdr in attachments:
                         outmsg.attach(self._update_att_name(att['part'],
                                                             newmsg[hdr]))
@@ -916,7 +915,7 @@ class Email(object):
                 return mbox, msg_ptr, FixupForWith(fd)
             except (IOError, OSError, KeyError, ValueError, IndexError):
                 # FIXME: If this pointer is wrong, should we fix the index?
-                print 'WARNING: %s not found' % msg_ptr
+                print 'WARNING: {0!s} not found'.format(msg_ptr)
         return None, None, None
 
     def get_file(self):
@@ -959,9 +958,9 @@ class Email(object):
         # complex nested crypto-in-text messages, which a more
         # forceful parse of the message may have caught earlier.
         no_sig = self.config.get_tag('mp_sig-none')
-        no_sig = no_sig and '%s:in' % no_sig._key
+        no_sig = no_sig and '{0!s}:in'.format(no_sig._key)
         no_enc = self.config.get_tag('mp_enc-none')
-        no_enc = no_enc and '%s:in' % no_enc._key
+        no_enc = no_enc and '{0!s}:in'.format(no_enc._key)
         if no_sig not in kw or no_enc not in kw:
             msg_info = self.get_msg_info()
             msg_tags = msg_info[self.index.MSG_TAGS].split(',')
@@ -1046,11 +1045,11 @@ class Email(object):
             pfn = self.index.hdr(0, 0, value=part.get_filename() or '')
 
             if (('*' == att_id)
-                    or ('#%s' % count == att_id)
-                    or ('part:%s' % count == att_id)
+                    or ('#{0!s}'.format(count) == att_id)
+                    or ('part:{0!s}'.format(count) == att_id)
                     or (content_id == att_id)
                     or (mimetype == att_id)
-                    or (pfn.lower().endswith('.%s' % att_id))
+                    or (pfn.lower().endswith('.{0!s}'.format(att_id)))
                     or (pfn == att_id)):
                 if not negative:
                     yield (count, content_id, pfn, mimetype, part)
@@ -1172,19 +1171,19 @@ class Email(object):
                     if '@' in txt:
                         return txt
                     else:
-                        return '%s (%s)' % (txt, url.split(':', 1)[1])
+                        return '{0!s} ({1!s})'.format(txt, url.split(':', 1)[1])
                 else:
-                    links.append(' [%d] %s%s' % (len(links) + 1,
+                    links.append(' [{0:d}] {1!s}{2!s}'.format(len(links) + 1,
                                                  txt and (txt + ': ') or '',
                                                  url))
-                    return '%s[%d]' % (txt, len(links))
+                    return '{0!s}[{1:d}]'.format(txt, len(links))
             def deimg(m):
                 tag, url = m.group(0), m.group(1)
                 if ' alt=' in tag:
                     return re.sub(self.RE_HTML_IMG_ALT, '\1', tag).strip()
                 else:
-                    imgs.append(' [%d] %s' % (len(imgs)+1, url))
-                    return '[Image %d]' % len(imgs)
+                    imgs.append(' [{0:d}] {1!s}'.format(len(imgs)+1, url))
+                    return '[Image {0:d}]'.format(len(imgs))
             html = re.sub(self.RE_HTML_PARAGRAPHS, '\n\n\\1',
                        re.sub(self.RE_HTML_NEWLINES, '\n\\1',
                            re.sub(self.RE_HTML_BORING, ' ',
@@ -1809,9 +1808,9 @@ class AddressHeaderParser(list):
                                       header=True)
             enc = enc.replace('<', '=3C').replace('>', '=3E')
             enc = enc.replace(',', '=2C')
-            return '=?utf-8?Q?%s?=' % enc
+            return '=?utf-8?Q?{0!s}?='.format(enc)
         else:
-            return '"%s"' % self.escape(strng)
+            return '"{0!s}"'.format(self.escape(strng))
 
     def _tokenize(self, string, munge=False):
         if munge:
@@ -1828,7 +1827,7 @@ class AddressHeaderParser(list):
                 return self.unescape(token[1:-1])
         elif token.startswith('[mailto:') and token[-1:] == ']':
             # Just convert [mailto:...] crap into a <address>
-            return '<%s>' % token[8:-1]
+            return '<{0!s}>'.format(token[8:-1])
         elif (token[:1] == '[' and token[-1:] == ']'):
             return token[1:-1]
         return token
@@ -1912,7 +1911,7 @@ class AddressHeaderParser(list):
                 return email_at(i)
 
         if _raise:
-            raise ValueError('No email found in %s' % (g,))
+            raise ValueError('No email found in {0!s}'.format(g))
         else:
             return None
 
@@ -1927,9 +1926,9 @@ class AddressHeaderParser(list):
             email = ai.address
             if with_keys and ai.keys:
                 fp = ai.keys[0].get('fingerprint')
-                epart = '<%s%s>' % (email, fp and ('#%s' % fp) or '')
+                epart = '<{0!s}{1!s}>'.format(email, fp and ('#{0!s}'.format(fp)) or '')
             else:
-                epart = '<%s>' % email
+                epart = '<{0!s}>'.format(email)
             if ai.fn:
                  return ' '.join([quote and self.quote(ai.fn) or ai.fn, epart])
             elif force_name:
@@ -1947,6 +1946,6 @@ if __name__ == "__main__":
     import sys
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print '%s' % (results, )
+    print '{0!s}'.format(results )
     if results.failed:
         sys.exit(1)

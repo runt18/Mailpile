@@ -77,7 +77,7 @@ def _update_scores(key_id, key_info, known_keys_list):
 
     sc, reason = max([(abs(score), reason)
                      for score, reason in key_info['scores'].values()])
-    key_info['score_reason'] = '%s' % reason
+    key_info['score_reason'] = '{0!s}'.format(reason)
 
     log_score = math.log(3 * abs(key_info['score']), 3)
     key_info['score_stars'] = (max(1, min(int(round(log_score)), 5))

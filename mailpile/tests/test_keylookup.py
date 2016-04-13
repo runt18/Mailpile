@@ -22,7 +22,7 @@ fpr = "08A650B8E2CBC1B02297915DC65626EED13C70DA"
 url = "https://mailpile.is/gpgkey.gpg"
 DNSPKA_MOCK_RETURN = [{
     'typename': 'TXT', 'name': 'test._pka.mailpile.is',
-    'data': ['v=pka1;fpr=%s;uri=%s' % (fpr, url)],
+    'data': ['v=pka1;fpr={0!s};uri={1!s}'.format(fpr, url)],
 }]
 
 

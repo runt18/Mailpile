@@ -65,7 +65,7 @@ class LibravatarImporter(VCardImporter):
         return want
 
     def _get(self, url):
-        self.session.ui.mark('Getting: %s' % url)
+        self.session.ui.mark('Getting: {0!s}'.format(url))
         return secure_urlget(self.session, url,
                              timeout=5,
                              anonymous=self.config.anonymous)
@@ -141,7 +141,7 @@ class LibravatarImporter(VCardImporter):
             if img:
                 vcard.add(VCardLine(
                     name='photo',
-                    value='data:image/jpeg;base64,%s' % _b64(img),
+                    value='data:image/jpeg;base64,{0!s}'.format(_b64(img)),
                     mediatype='image/jpeg'
                 ))
 

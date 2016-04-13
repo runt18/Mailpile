@@ -50,4 +50,4 @@ with open(sys.argv[1], 'rb') as fd:
 print ('Done, found %d messages, %d msgids'
        ) % (len(messages), len([1 for mi in msgids if mi]))
 for i in range(0, 20):
-    print '%d/%d = %s' % (i * 13, messages[i], msgids[i * 13])
+    print '{0:d}/{1:d} = {2!s}'.format(i * 13, messages[i], msgids[i * 13])

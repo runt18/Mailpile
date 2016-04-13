@@ -52,7 +52,7 @@ def AddComposeMethods(cls):
             try:
                 from mailpile.plugins.contacts import AddContact
                 AddContact(self.session,
-                           arg=['=%s' % e.msg_mid() for e in emails]
+                           arg=['={0!s}'.format(e.msg_mid()) for e in emails]
                            ).run(recipients=True, quietly=True, internal=True)
             except (TypeError, ValueError, IndexError):
                 self._ignore_exception()
@@ -113,7 +113,7 @@ def AddComposeMethods(cls):
             etype, etarg, msgid = msgid.split('-', 2)
             if etarg not in ('all', 'att'):
                 msgid = etarg + '-' + msgid
-            msgid = '<%s>' % msgid.replace('_', '@')
+            msgid = '<{0!s}>'.format(msgid.replace('_', '@'))
             etype = etype.lower()
 
             enc_msgid = idx.encode_msg_id(msgid)
@@ -138,7 +138,7 @@ def AddComposeMethods(cls):
                 e = Compose.CreateMessage(idx, self.session, msgid)[0]
 
             self._tag_blank([e])
-            self.session.ui.debug('Actualized: %s' % e.msg_mid())
+            self.session.ui.debug('Actualized: {0!s}'.format(e.msg_mid()))
 
             return Email(idx, e.msg_idx_pos)
 
@@ -177,7 +177,7 @@ class CompositionCommand(AddComposeMethods(Search)):
 
         # Message IDs can come from post data
         for mid in self.data.get('mid', []):
-            args.append('=%s' % mid)
+            args.append('={0!s}'.format(mid))
         emails = emails or [self._actualize_ephemeral(mid) for mid in
                             self._choose_messages(args, allow_ephemeral=True)]
 
@@ -204,7 +204,7 @@ class CompositionCommand(AddComposeMethods(Search)):
                         data = ', '.join(self.data[hdr.lower()])
                     else:
                         data = defaults.get(hdr.lower(), '')
-                    up.append('%s: %s' % (hdr, data))
+                    up.append('{0!s}: {1!s}'.format(hdr, data))
 
                 # This preserves in-reply-to, references and any other
                 # headers we're not usually keen on editing.
@@ -223,7 +223,7 @@ class CompositionCommand(AddComposeMethods(Search)):
                                                    {}).iteritems():
                     if att_id in att_keep:
                         fn = att_keep[att_id] or att_fn
-                        up.append('Attachment-%s: %s' % (att_id, fn))
+                        up.append('Attachment-{0!s}: {1!s}'.format(att_id, fn))
 
                 updates.append((e, '\n'.join(
                     up +
@@ -233,7 +233,7 @@ class CompositionCommand(AddComposeMethods(Search)):
             elif noneok:
                 updates.append((e, None))
             elif 'compose' in self.session.config.sys.debug:
-                sys.stderr.write('Doing nothing with %s' % update_header_set)
+                sys.stderr.write('Doing nothing with {0!s}'.format(update_header_set))
             fofs += 1
 
         if 'compose' in self.session.config.sys.debug:
@@ -337,7 +337,7 @@ class Compose(CompositionCommand):
             local_id, lmbox = session.config.open_local_mailbox(session)
         else:
             local_id, lmbox = -1, None
-            ephemeral = ['new-%s-mail' % msgid[1:-1].replace('@', '_')]
+            ephemeral = ['new-{0!s}-mail'.format(msgid[1:-1].replace('@', '_'))]
         return (Email.Create(idx, local_id, lmbox,
                              save=(not ephemeral),
                              msg_text=(cid and cls._get_canned(idx, cid)
@@ -388,7 +388,7 @@ class RelativeCompose(Compose):
         elif prefix_regex.match(subject):
             return subject
         else:
-            return '%s %s' % (prefix, subject)
+            return '{0!s} {1!s}'.format(prefix, subject)
 
 
 class Reply(RelativeCompose):
@@ -411,8 +411,8 @@ class Reply(RelativeCompose):
             keys = vcard.get_all('KEY')
             if keys:
                 mime, fp = keys[0].value.split('data:')[1].split(',', 1)
-                return "%s <%s#%s>" % (fn, fe, fp)
-        return "%s <%s>" % (fn, fe)
+                return "{0!s} <{1!s}#{2!s}>".format(fn, fe, fp)
+        return "{0!s} <{1!s}>".format(fn, fe)
 
     @classmethod
     def _create_from_to_cc(cls, idx, session, trees):
@@ -537,7 +537,7 @@ class Reply(RelativeCompose):
         ephemeral = False
         args = list(self.args)
         if not args:
-            args = ["=%s" % x for x in self.data.get('mid', [])]
+            args = ["={0!s}".format(x) for x in self.data.get('mid', [])]
             ephemeral = bool(self.data.get('ephemeral', False))
             reply_all = bool(self.data.get('reply_all', False))
         else:
@@ -597,7 +597,7 @@ class Forward(RelativeCompose):
             for h in ('Date', 'Subject', 'From', 'To'):
                 v = t['headers_lc'].get(h.lower(), None)
                 if v:
-                    text += '%s: %s\n' % (h, v)
+                    text += '{0!s}: {1!s}\n'.format(h, v)
             text += '\n'
             text += ''.join([p['data'] for p in t['text_parts']
                              if p['type'] in cls._TEXT_PARTTYPES])
@@ -639,7 +639,7 @@ class Forward(RelativeCompose):
         ephemeral = False
         args = list(self.args)
         if not args:
-            args = ["=%s" % x for x in self.data.get('mid', [])]
+            args = ["={0!s}".format(x) for x in self.data.get('mid', [])]
             ephemeral = bool(self.data.get('ephemeral', False))
             with_atts = bool(self.data.get('atts', False))
         else:
@@ -696,7 +696,7 @@ class Attach(CompositionCommand):
             count = 0
             for fd in self.data['file-data']:
                 fn = (hasattr(fd, 'filename')
-                      and fd.filename or 'attach-%d.dat' % count)
+                      and fd.filename or 'attach-{0:d}.dat'.format(count))
                 filedata[fn] = fd
                 files.append(fn)
                 count += 1
@@ -713,7 +713,7 @@ class Attach(CompositionCommand):
             return self._error(_('No files found'))
 
         if not emails:
-            args.extend(['=%s' % mid for mid in self.data.get('mid', [])])
+            args.extend(['={0!s}'.format(mid) for mid in self.data.get('mid', [])])
             emails = [self._actualize_ephemeral(i) for i in
                       self._choose_messages(args, allow_ephemeral=True)]
         if not emails:
@@ -774,7 +774,7 @@ class UnAttach(CompositionCommand):
         atts.extend(self.data.get('att', []))
 
         if not emails:
-            args.extend(['=%s' % mid for mid in self.data.get('mid', [])])
+            args.extend(['={0!s}'.format(mid) for mid in self.data.get('mid', [])])
             emails = [self._actualize_ephemeral(i) for i in
                       self._choose_messages(args, allow_ephemeral=True)]
         if not emails:
@@ -845,7 +845,7 @@ class Sendit(CompositionCommand):
             sender = idx.config.get_profile().get('email', None)
 
         if not emails:
-            args.extend(['=%s' % mid for mid in self.data.get('mid', [])])
+            args.extend(['={0!s}'.format(mid) for mid in self.data.get('mid', [])])
             emails = [self._actualize_ephemeral(i) for i in
                       self._choose_messages(args, allow_ephemeral=True)]
 
@@ -1025,7 +1025,7 @@ class UnThread(CompositionCommand):
         # Message IDs can come from post data
         args = list(self.args)
         for mid in self.data.get('mid', []):
-            args.append('=%s' % mid)
+            args.append('={0!s}'.format(mid))
         emails = [self._actualize_ephemeral(i) for i in
                   self._choose_messages(args, allow_ephemeral=True)]
 
@@ -1055,17 +1055,17 @@ class EmptyOutbox(Sendit):
         # Collect a list of messages from the outbox
         messages = []
         for tag in cfg.get_tags(type='outbox'):
-            search = ['in:%s' % tag._key]
+            search = ['in:{0!s}'.format(tag._key)]
             for msg_idx_pos in idx.search(self.session, search,
                                           order='flat-index').as_set():
-                messages.append('=%s' % b36(msg_idx_pos))
+                messages.append('={0!s}'.format(b36(msg_idx_pos)))
 
         # Messages no longer in the outbox get their events canceled...
         if cfg.event_log:
             events = cfg.event_log.incomplete(source='.plugins.compose.Sendit')
             for ev in events:
                 if ('mid' in ev.data and
-                        ('=%s' % ev.data['mid']) not in messages):
+                        ('={0!s}'.format(ev.data['mid'])) not in messages):
                     ev.flags = ev.COMPLETE
                     ev.message = _('Sending cancelled.')
                     cfg.event_log.log_event(ev)

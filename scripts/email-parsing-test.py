@@ -23,10 +23,10 @@ from mailpile.mailutils import AddressHeaderParser as AHP
 
 
 ahp_tests = AHP(AHP.TEST_HEADER_DATA)
-print '_tokens: %s' % ahp_tests._tokens
-print '_groups: %s' % ahp_tests._groups
-print '%s' % ahp_tests
-print 'normalized: %s' % ahp_tests.normalized()
+print '_tokens: {0!s}'.format(ahp_tests._tokens)
+print '_groups: {0!s}'.format(ahp_tests._groups)
+print '{0!s}'.format(ahp_tests)
+print 'normalized: {0!s}'.format(ahp_tests.normalized())
 
 
 headers, header, inheader = {}, None, False
@@ -39,11 +39,11 @@ for line in sys.stdin:
                     try:
                         nv = AHP(val, _raise=True).normalized()
                         if '\\' in nv:
-                            print 'ESCAPED: %s: %s (was %s)' % (hdr, nv, val)
+                            print 'ESCAPED: {0!s}: {1!s} (was {2!s})'.format(hdr, nv, val)
                         else:
-                            print '%s' % (nv,)
+                            print '{0!s}'.format(nv)
                     except ValueError:
-                        print 'FAILED: %s: %s -- %s' % (hdr, val,
+                        print 'FAILED: {0!s}: {1!s} -- {2!s}'.format(hdr, val,
                             traceback.format_exc().replace('\n', '  '))
             headers, header, inheader = {}, None, False
         elif line[:1] in (' ', '\t') and header:

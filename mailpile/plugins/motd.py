@@ -78,7 +78,7 @@ class MessageOfTheDay(Command):
             return _('Unsupported URL for message of the day: %s') % url
 
         with ConnBroker.context(need=conn_need) as ctx:
-            self.session.ui.mark('Getting: %s' % url)
+            self.session.ui.mark('Getting: {0!s}'.format(url))
             return urlopen(url, data=None, timeout=10).read()
 
     class CommandResult(Command.CommandResult):
@@ -88,7 +88,7 @@ class MessageOfTheDay(Command):
                 return ''
 
             date = dtime.fromtimestamp(self.result.get('timestamp', 0))
-            return '%s, %4.4d-%2.2d-%2.2d:\n\n    %s\n\n*** %s ***\n' % (
+            return '{0!s}, {1:4.4d}-{2:2.2d}-{3:2.2d}:\n\n    {4!s}\n\n*** {5!s} ***\n'.format(
                 _('Message Of The Day'),
                 date.year, date.month, date.day,
                 motd.replace('\n', '\n    '),
@@ -106,7 +106,7 @@ class MessageOfTheDay(Command):
         old_motd = motd = None
         try:
             old_motd = motd = config.load_pickle('last_motd')
-            message = '%s: %s' % (_('Message Of The Day'), _('Loaded'))
+            message = '{0!s}: {1!s}'.format(_('Message Of The Day'), _('Loaded'))
         except (OSError, IOError):
             pass
 
@@ -134,7 +134,7 @@ class MessageOfTheDay(Command):
                         or old_motd.get("timestamp") != motd.get("timestamp")):
                     config.save_pickle(motd, 'last_motd', encrypt=False)
                     motd['_is_new'] = True
-                    message = '%s: %s' % (_('Message Of The Day'), _('Updated'))
+                    message = '{0!s}: {1!s}'.format(_('Message Of The Day'), _('Updated'))
             except (IOError, OSError, ValueError):
                 pass
 
@@ -164,7 +164,7 @@ class MessageOfTheDay(Command):
 
             return self._success(message, result=motd)
         else:
-            message = '%s: %s' % (_('Message Of The Day'), _('Unknown'))
+            message = '{0!s}: {1!s}'.format(_('Message Of The Day'), _('Unknown'))
             return self._error(message, result={})
 
 

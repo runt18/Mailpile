@@ -13,7 +13,7 @@ def modified_base64 (s):
 
 def doB64(_in, r):
   if _in:
-    r.append('&%s-' % modified_base64(''.join(_in)))
+    r.append('&{0!s}-'.format(modified_base64(''.join(_in))))
     del _in[:]
 
 def encoder(s):

@@ -99,7 +99,7 @@ class dataDigCommand(Command):
         without_mid |= truthy(self.data.get('no-mid', [''])[0])
         tracking_id = self.data.get('track-id', [tracking_id])[0]
         columns.extend(self.data.get('term', []))
-        msgs.extend(['=%s' % mid.replace('=', '')
+        msgs.extend(['={0!s}'.format(mid.replace('=', ''))
                      for mid in self.data.get('mid', [])])
 
         # Add a header to the CSV if requested
@@ -126,7 +126,7 @@ class dataDigCommand(Command):
                 self._update_event_state(self.event.RUNNING, log=True)
             else:
                 session.ui.mark(_('Digging into =%s') % e.msg_mid())
-            row = [] if without_mid else ['%s' % e.msg_mid()]
+            row = [] if without_mid else ['{0!s}'.format(e.msg_mid())]
             for cellspec in columns:
                 row.extend(self._cell(idx, e, cellspec))
             results.append(row)

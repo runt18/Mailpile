@@ -139,11 +139,11 @@ class VCardLine(dict):
         for k, v in self._attrs:
             k = k.upper()
             if v is None:
-                key += ';%s' % (self.Quote(k))
+                key += ';{0!s}'.format((self.Quote(k)))
             else:
-                key += ';%s=%s' % (self.Quote(k), self.Quote(unicode(v)))
+                key += ';{0!s}={1!s}'.format(self.Quote(k), self.Quote(unicode(v)))
 
-        wrapped, line = '', '%s:%s' % (key, self.Quote(self._value))
+        wrapped, line = '', '{0!s}:{1!s}'.format(key, self.Quote(self._value))
         llen = 0
         for char in line:
             char = char.encode('utf-8')
@@ -336,7 +336,7 @@ class SimpleVCard(object):
             self.load(data=kwargs['data'])
         if 'client' in kwargs and kwargs['client']:
             self.add(VCardLine(name='CLIENTPIDMAP',
-                               value='%s;%s' % (self.MAX_SRC_PID,
+                               value='{0!s};{1!s}'.format(self.MAX_SRC_PID,
                                                 kwargs['client'])))
             self._default_src_pid = self.MAX_SRC_PID
         self.add(*lines)
@@ -368,8 +368,7 @@ class SimpleVCard(object):
                 vcl = self._lines[index]
                 if vcl and vcl.line_id in line_ids:
                     if self._lines[index].name in self.UNREMOVABLE:
-                        raise ValueError('Cannot remove %s from VCard'
-                                         % self._lines[index].name)
+                        raise ValueError('Cannot remove {0!s} from VCard'.format(self._lines[index].name))
                     self._lines[index] = None
                     removed += 1
         return removed
@@ -422,10 +421,10 @@ class SimpleVCard(object):
                 count = len([l for l in self._lines
                              if l and l.name == vcl.name])
                 if not cardinality:
-                    raise ValueError('Not allowed on card: %s' % vcl.name)
+                    raise ValueError('Not allowed on card: {0!s}'.format(vcl.name))
                 if cardinality in ('1', '*1'):
                     if count:
-                        raise ValueError('Already on card: %s' % vcl.name)
+                        raise ValueError('Already on card: {0!s}'.format(vcl.name))
 
                 # Special case to avoid duplicate CLIENTPIDMAP lines
                 if vcl.name == 'clientpidmap':
@@ -439,7 +438,7 @@ class SimpleVCard(object):
                 if (src_pid is not None and
                         vcl.name not in self.UNREMOVABLE and
                         'pid' not in vcl):
-                    vcl.set_attr('pid', '%s.%s' % (src_pid, version))
+                    vcl.set_attr('pid', '{0!s}.{1!s}'.format(src_pid, version))
                 self._lines.append(vcl)
                 vcl.line_id = len(self._lines)
 
@@ -463,7 +462,7 @@ class SimpleVCard(object):
         if (src_pid is not None and
                 vcl.name not in self.UNREMOVABLE and
                 'pid' not in vcl):
-            vcl.set_attr('pid', '%s.%s' % (src_pid, version))
+            vcl.set_attr('pid', '{0!s}.{1!s}'.format(src_pid, version))
 
         with self._lock:
             vcl.line_id = ln
@@ -528,11 +527,11 @@ class SimpleVCard(object):
                     raise ValueError("Client PID map is too big")
 
                 self.add(VCardLine(name='clientpidmap',
-                                   value='%s;%s' % (src_pid, src_id)))
+                                   value='{0!s};{1!s}'.format(src_pid, src_id)))
                 pidmap = cpm[src_pid] = cpm[src_id] = {'lines': []}
                 is_new = True
             else:
-                raise KeyError('No such CLIENTPIDMAP: %s' % src_id)
+                raise KeyError('No such CLIENTPIDMAP: {0!s}'.format(src_id))
 
             version = 0
             for ver, ol in pidmap['lines'][:]:
@@ -653,10 +652,10 @@ class SimpleVCard(object):
                 for ol in old:
                     pids = [pid for pid in ol.get('pid', '').split(',')
                             if pid and int(pid.split('.')[0]) != src_pid]
-                    pids.append('%s.%s' % (src_pid, version))
+                    pids.append('{0!s}.{1!s}'.format(src_pid, version))
                     ol.set_attr('pid', ','.join(sorted(pids)))
                 if not old:
-                    vcl.set_attr('pid', '%s.%s' % (src_pid, version))
+                    vcl.set_attr('pid', '{0!s}.{1!s}'.format(src_pid, version))
                     self.add(vcl)
                     changes += 1
 
@@ -800,7 +799,7 @@ class MailpileVCard(SimpleVCard):
 
         # Add the priority CLIENTPIDMAP line, for user settings
         self.add(VCardLine(name='CLIENTPIDMAP',
-                           value='%s;%s' % (self.MAX_SRC_PID + 1,
+                           value='{0!s};{1!s}'.format(self.MAX_SRC_PID + 1,
                                             self.PRIORITY_CLIENT)))
         self._priority_client = self.MAX_SRC_PID + 1
 
@@ -884,7 +883,7 @@ class MailpileVCard(SimpleVCard):
         if (not len(lines) >= 2 or
                 not lines.pop(0).upper() == 'BEGIN:VCARD' or
                 not lines.pop(-1).upper() == 'END:VCARD'):
-            raise ValueError('Not a valid VCard: %s' % '\n'.join(lines))
+            raise ValueError('Not a valid VCard: {0!s}'.format('\n'.join(lines)))
 
         with self._lock:
             for line in lines:
@@ -952,7 +951,7 @@ class MailpileVCard(SimpleVCard):
                 self.add(history_vcl)
             now = now if (now is not None) else time.time()
             entries, history = self._history_parse_expire(history_vcl, now)
-            entries.append('%s-%s-%s' % (what[0], b36(int(when)), mid))
+            entries.append('{0!s}-{1!s}-{2!s}'.format(what[0], b36(int(when)), mid))
             history_vcl.value = ','.join(entries)
 
     def same_domain(self, address):
@@ -1275,14 +1274,12 @@ class VCardStore(dict):
                     try:
                         def ccb(key, card):
                             if session:
-                                session.ui.error('DISABLING %s, eclipses %s'
-                                                 % (path, key))
+                                session.ui.error('DISABLING {0!s}, eclipses {1!s}'.format(path, key))
                             os.rename(path, path + '.bak')
                             raise ValueError('Eclipsing')
                         self.index_vcard(c, collision_callback=ccb)
                         if session:
-                            session.ui.mark('Loaded %s from %s'
-                                            % (c.email, fn))
+                            session.ui.mark('Loaded {0!s} from {1!s}'.format(c.email, fn))
                     except ValueError:
                         pass
                 except KeyboardInterrupt:
@@ -1295,7 +1292,7 @@ class VCardStore(dict):
                         if 'vcard' in self.config.sys.debug:
                             import traceback
                             traceback.print_exc()
-                        session.ui.warning('Failed to load vcard %s' % fn)
+                        session.ui.warning('Failed to load vcard {0!s}'.format(fn))
             self.loaded = True
         except (OSError, IOError):
             pass
@@ -1489,7 +1486,7 @@ class VCardPluginClass:
         if not self.config.guid:
             if not guid:
                 global GUID_COUNTER
-                guid = 'urn:uuid:mp-%s-%x-%x' % (self.SHORT_NAME, time.time(),
+                guid = 'urn:uuid:mp-{0!s}-{1:x}-{2:x}'.format(self.SHORT_NAME, time.time(),
                                                  GUID_COUNTER)
                 GUID_COUNTER += 1
             self.config.guid = guid
@@ -1619,6 +1616,6 @@ if __name__ == "__main__":
     cfg = mailpile.config.ConfigManager(rules=mailpile.defaults.CONFIG_RULES)
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={'cfg': cfg})
-    print '%s' % (results, )
+    print '{0!s}'.format(results )
     if results.failed:
         sys.exit(1)

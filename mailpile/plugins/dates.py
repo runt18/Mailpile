@@ -14,11 +14,11 @@ _plugins = PluginManager(builtin=__name__)
 def meta_kw_extractor(index, msg_mid, msg, msg_size, msg_ts, **kwargs):
     mdate = datetime.date.fromtimestamp(msg_ts)
     keywords = [
-        '%s:year' % mdate.year,
-        '%s:month' % mdate.month,
-        '%s:day' % mdate.day,
-        '%s-%s:yearmonth' % (mdate.year, mdate.month),
-        '%s-%s-%s:date' % (mdate.year, mdate.month, mdate.day)
+        '{0!s}:year'.format(mdate.year),
+        '{0!s}:month'.format(mdate.month),
+        '{0!s}:day'.format(mdate.day),
+        '{0!s}-{1!s}:yearmonth'.format(mdate.year, mdate.month),
+        '{0!s}-{1!s}-{2!s}:date'.format(mdate.year, mdate.month, mdate.day)
     ]
     return keywords
 
@@ -38,7 +38,7 @@ def _adjust(d):
 
 def _mk_date(ts):
     mdate = datetime.date.fromtimestamp(ts)
-    return '%d-%d-%d' % (mdate.year, mdate.month, mdate.day)
+    return '{0:d}-{1:d}-{2:d}'.format(mdate.year, mdate.month, mdate.day)
 
 
 _date_offsets = {
@@ -77,7 +77,7 @@ def search(config, idx, term, hits):
             if start[1:] == [1, 1]:
                 ny = [start[0], 12, 31]
                 if ny <= end:
-                    terms.append('%d:year' % start[0])
+                    terms.append('{0:d}:year'.format(start[0]))
                     start[0] += 1
                     continue
 
@@ -85,13 +85,13 @@ def search(config, idx, term, hits):
             if start[2] == 1:
                 nm = [start[0], start[1], 31]
                 if nm <= end:
-                    terms.append('%d-%d:yearmonth' % (start[0], start[1]))
+                    terms.append('{0:d}-{1:d}:yearmonth'.format(start[0], start[1]))
                     start[1] += 1
                     _adjust(start)
                     continue
 
             # Move forward one day...
-            terms.append('%d-%d-%d:date' % tuple(start))
+            terms.append('{0:d}-{1:d}-{2:d}:date'.format(*tuple(start)))
             start[2] += 1
             _adjust(start)
 
@@ -100,7 +100,7 @@ def search(config, idx, term, hits):
             rt.extend(hits(t))
         return rt
     except:
-        raise ValueError('Invalid date range: %s' % term)
+        raise ValueError('Invalid date range: {0!s}'.format(term))
 
 
 _plugins.register_search_term('dates', search)

@@ -34,7 +34,7 @@ authors = [(c, n, e) for e, (n, c) in authors.iteritems()]
 
 # Get translators from .po files
 for lang in os.listdir('shared-data/locale'):
-    po = 'shared-data/locale/%s/LC_MESSAGES/mailpile.po' % lang
+    po = 'shared-data/locale/{0!s}/LC_MESSAGES/mailpile.po'.format(lang)
     tr = translators[lang] = ['', []]
     try:
         with open(po, 'r') as fd:
@@ -54,7 +54,7 @@ code = 'shared-data/default-theme/html/page/release-notes/credits-code.html'
 i18n = 'shared-data/default-theme/html/page/release-notes/credits-i18n.html'
 with open(code, 'w') as fd:
     authors.sort(key=lambda a: a[1])
-    fd.write('\n'.join('<li class="commits-%s">%s</li>' % (a[0], a[1])
+    fd.write('\n'.join('<li class="commits-{0!s}">{1!s}</li>'.format(a[0], a[1])
                        for a in authors))
 
 with open(i18n, 'w') as fd:
@@ -62,10 +62,10 @@ with open(i18n, 'w') as fd:
     for lang in sorted(translators.keys()):
         language, tlist = translators[lang]
         if language:
-            fd.write('<li class="language">%s</li>\n' % language)
-            fd.write(''.join('<li>%s</li>\n' % re.sub(email, '', n)
+            fd.write('<li class="language">{0!s}</li>\n'.format(language))
+            fd.write(''.join('<li>{0!s}</li>\n'.format(re.sub(email, '', n))
                              for n in sorted(tlist)))
         elif translators[lang][1]:
-            print 'wtf: %s' % translators[lang]
+            print 'wtf: {0!s}'.format(translators[lang])
 
-os.system('ls -l %s %s' % (code, i18n))
+os.system('ls -l {0!s} {1!s}'.format(code, i18n))

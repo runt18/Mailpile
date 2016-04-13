@@ -60,11 +60,11 @@ try:
 except (OSError, IOError):
     BRANCH = None
 if BRANCH:
-    BRANCHVER = '.%s%s' % (BRANCH, str(datetime.date.today()).replace('-', ''))
+    BRANCHVER = '.{0!s}{1!s}'.format(BRANCH, str(datetime.date.today()).replace('-', ''))
 else:
     BRANCHVER = ''
 
-APPVER = '%s%s' % (next(
+APPVER = '{0!s}{1!s}'.format(next(
     line.strip() for line in open('mailpile/defaults.py', 'r')
     if re.match(r'^APPVER\s*=', line)
 ).split('"')[1], BRANCHVER)

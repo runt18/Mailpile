@@ -37,7 +37,7 @@ class Indicator(object):
             uo = urllib.URLopener()
             for cookie, value in self.config.get('http_cookies', {}
                                                  ).get(base_url, []):
-                uo.addheader('Cookie', '%s=%s' % (cookie, value))
+                uo.addheader('Cookie', '{0!s}={1!s}'.format(cookie, value))
 
             if op == 'post_url':
                 (fn, hdrs) = uo.retrieve(url, data=args)
@@ -65,7 +65,7 @@ class Indicator(object):
             self._add_menu_item(**item_info)
 
     def _set_status(self, status):
-        print 'STATUS: %s' % status
+        print 'STATUS: {0!s}'.format(status)
 
     def set_status_startup(self):
         self._set_status('startup')
@@ -110,7 +110,7 @@ class Indicator(object):
         pass
 
     def notify_user(self, message='Hello'):
-        print 'NOTIFY: %s' % message
+        print 'NOTIFY: {0!s}'.format(message)
 
 
 ##[ An indicator for Ubuntu's Unity ]##########################################
@@ -281,7 +281,7 @@ def UnityIndicator():
                 notification.set_urgency(pynotify.URGENCY_NORMAL)
                 notification.show()
             else:
-                print 'FIXME: Notify: %s' % message
+                print 'FIXME: Notify: {0!s}'.format(message)
 
         _STATUS_MODES = {
             'startup': appindicator.STATUS_ACTIVE,
@@ -351,7 +351,7 @@ def MacOSXIndicator():
                     if i in self.indicator.callbacks:
                         self.indicator.callbacks[i]()
                     return
-            print 'activated an unknown item: %s' % notification
+            print 'activated an unknown item: {0!s}'.format(notification)
 
     class MailpileIndicator(Indicator):
 
@@ -439,7 +439,7 @@ class StdinWatcher(threading.Thread):
         if hasattr(self.gui, command):
             getattr(self.gui, command)(**kwargs)
         else:
-            print 'Unknown method: %s' % command
+            print 'Unknown method: {0!s}'.format(command)
 
     def run(self):
         try:

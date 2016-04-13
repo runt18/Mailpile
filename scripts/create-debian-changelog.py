@@ -11,13 +11,13 @@ def getLogMessage(commitSHA):
 
 def versionFromCommitNo(commitNo):
     """Generate a version string from a numerical commit no"""
-    return "0.0.0-dev%d" % commitNo
+    return "0.0.0-dev{0:d}".format(commitNo)
 
 #Execute git rev-list $(git rev-parse HEAD) to get list of revisions
 head = check_output(["git","rev-parse","HEAD"]).strip()
 revisions = check_output(["git","rev-list",head]).strip().split("\n")
 #Revisions now contains rev identifiers, newest revisions first.
-print "Found %d revisions" % len(revisions)
+print "Found {0:d} revisions".format(len(revisions))
 revisions.reverse() #In-place reverse, to make oldest revision first
 #Map the revisions to their log msgs
 print "Mapping revisions to log messages"
@@ -32,6 +32,6 @@ firstCommitMsg = revLogMsgs[0]
 call(["dch","--create","-v",versionFromCommitNo(0),"--package","mailpile",firstCommitMsg])
 #Create the changelog entry for all other commits
 for i in range(1, len(revisions)):
-    print "Generating changelog for revision %d" % i
+    print "Generating changelog for revision {0:d}".format(i)
     commitMsg = revLogMsgs[i]
     call(["dch","-v",versionFromCommitNo(i),"--package","mailpile",commitMsg])

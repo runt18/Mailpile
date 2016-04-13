@@ -62,7 +62,7 @@ class Events(Command):
                 try:
                     limit = int(arg)
                 except ValueError:
-                    raise UsageError('Bad argument: %s' % arg)
+                    raise UsageError('Bad argument: {0!s}'.format(arg))
 
         # Handle args from the web
         def fset(arg, val):
@@ -76,7 +76,7 @@ class Events(Command):
             elif arg in ('data', 'private_data'):
                 for data in self.data[arg]:
                     var, val = data.split(':', 1)
-                    fset('%s_%s' % (arg, var), val)
+                    fset('{0!s}_{1!s}'.format(arg, var), val)
 
         # Compile regular expression matches
         for arg in filters:

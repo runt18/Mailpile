@@ -55,9 +55,9 @@ def SetLoggedIn(cmd, user=None, redirect=False, session_id=None):
     sid = session_id or cmd.session.ui.html_variables.get('http_session')
     if sid:
         if cmd:
-            cmd.session.ui.debug('Logged in %s as %s' % (sid, user))
+            cmd.session.ui.debug('Logged in {0!s} as {1!s}'.format(sid, user))
         SESSION_CACHE[sid] = UserSession(auth=user, data={
-            't': '%x' % int(time.time()),
+            't': '{0:x}'.format(int(time.time())),
         })
 
     if cmd:
@@ -97,7 +97,7 @@ class Authenticate(Command):
         qs = [(k, v.encode('utf-8')) for k, vl in data.iteritems() for v in vl
               if k not in ['_method', '_path'] + cls.HTTP_POST_VARS.keys()]
         qs = urlencode(qs)
-        url = ''.join([url, '?%s' % qs if qs else ''])
+        url = ''.join([url, '?{0!s}'.format(qs) if qs else ''])
         raise UrlRedirectException(url)
 
     def _result(self, result=None):
@@ -119,7 +119,7 @@ class Authenticate(Command):
                not path[1:].startswith(self.SYNOPSIS[2] or '!')):
             self.RedirectBack(self.session.config.sys.http_path + path, self.data)
         else:
-            raise UrlRedirectException('%s/' % self.session.config.sys.http_path)
+            raise UrlRedirectException('{0!s}/'.format(self.session.config.sys.http_path))
 
     def _do_login(self, user, password, load_index=False, redirect=False):
         session, config = self.session, self.session.config
@@ -148,7 +148,7 @@ class Authenticate(Command):
                         except KeyboardInterrupt:
                             pass
 
-                    session.ui.debug('Good passphrase for %s' % session_id)
+                    session.ui.debug('Good passphrase for {0!s}'.format(session_id))
                     self.record_user_activity()
                     return self._success(_('Hello world, welcome!'), result={
                         'authenticated': SetLoggedIn(self, redirect=redirect)
@@ -159,7 +159,7 @@ class Authenticate(Command):
                     user = 'DEFAULT'
 
             except (AssertionError, IOError):
-                session.ui.debug('Bad passphrase for %s' % session_id)
+                session.ui.debug('Bad passphrase for {0!s}'.format(session_id))
                 return self._error(_('Invalid passphrase, please try again'))
 
         if user in config.logins or user == 'DEFAULT':
@@ -214,7 +214,7 @@ class DeAuthenticate(Command):
 
         if session_id:
             try:
-                self.session.ui.debug('Logging out %s' % session_id)
+                self.session.ui.debug('Logging out {0!s}'.format(session_id))
                 del SESSION_CACHE[session_id]
                 return self._success(_('Goodbye!'))
             except KeyError:

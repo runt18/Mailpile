@@ -40,7 +40,7 @@ MY_NAME = 'Mailpile Team'
 MY_KEYID = '0x7848252F'
 
 # First, we set up a pristine Mailpile
-os.system('rm -rf %s' % mailpile_home)
+os.system('rm -rf {0!s}'.format(mailpile_home))
 mp = Mailpile(workdir=mailpile_home)
 cfg = config = mp._session.config
 ui = mp._session.ui
@@ -113,7 +113,7 @@ def do_setup():
     # Copy the test Maildir...
     for mailbox in ('Maildir', 'Maildir2'):
         path = os.path.join(mailpile_home, mailbox)
-        os.system('cp -a %s/Maildir %s' % (mailpile_test, path))
+        os.system('cp -a {0!s}/Maildir {1!s}'.format(mailpile_test, path))
 
     # Add the test mailboxes
     for mailbox in ('tests.mbx', ):
@@ -146,7 +146,7 @@ def test_load_save_rescan():
 
     # Rescan AGAIN, so we can test for the presence of duplicates and
     # verify that the move-detection code actually works.
-    os.system('rm -f %s/Maildir/*/*' % mailpile_home)
+    os.system('rm -f {0!s}/Maildir/*/*'.format(mailpile_home))
     mp.add(os.path.join(mailpile_home, 'Maildir2'))
     mp.rescan('mailboxes')
 
@@ -177,7 +177,7 @@ def test_load_save_rescan():
                    [u'subject:' + IS_CHARS, 'subject:UTF'],
                    ['use_libusb', 'unsubscribe', 'vger'],
                    ):
-        say('Searching for: %s' % search)
+        say('Searching for: {0!s}'.format(search))
         results = mp.search(*search)
         assert(results.result['stats']['count'] == 1)
 
@@ -193,7 +193,7 @@ def test_message_data():
     # Load up a message and take a look at it...
     search_md = mp.search('subject:emerging').result
     result_md = search_md['data']['metadata'][search_md['thread_ids'][0]]
-    view_md = mp.view('=%s' % result_md['mid']).result
+    view_md = mp.view('={0!s}'.format(result_md['mid'])).result
 
     # That loaded?
     message_md = view_md['data']['messages'][result_md['mid']]
@@ -202,7 +202,7 @@ def test_message_data():
     # Load up another message and take a look at it...
     search_bre = mp.search(*FROM_BRE).result
     result_bre = search_bre['data']['metadata'][search_bre['thread_ids'][0]]
-    view_bre = mp.view('=%s' % result_bre['mid']).result
+    view_bre = mp.view('={0!s}'.format(result_bre['mid'])).result
 
     # Make sure message threading is working (there are message-ids and
     # references in the test data).
@@ -212,19 +212,19 @@ def test_message_data():
     metadata_bre = view_bre['data']['metadata'][view_bre['message_ids'][0]]
     message_bre = view_bre['data']['messages'][view_bre['message_ids'][0]]
     from_bre = search_bre['data']['addresses'][metadata_bre['from']['aid']]
-    say('Checking encoding: %s' % from_bre)
+    say('Checking encoding: {0!s}'.format(from_bre))
     assert('=C3' not in from_bre['fn'])
     assert('=C3' not in from_bre['address'])
     for key, val in message_bre['header_list']:
         if key.lower() not in ('from', 'to', 'cc'):
             continue
-        say('Checking encoding: %s: %s' % (key, val))
+        say('Checking encoding: {0!s}: {1!s}'.format(key, val))
         assert('utf' not in val)
 
     # This message broke our HTML engine that one time
     search_md = mp.search('from:heretic', 'subject:outcome').result
     result_md = search_md['data']['metadata'][search_md['thread_ids'][0]]
-    view_md = mp.view('=%s' % result_md['mid'])
+    view_md = mp.view('={0!s}'.format(result_md['mid']))
     assert('Outcome' in view_md.as_html())
 
 
@@ -240,8 +240,8 @@ def test_composition():
 
     # Edit the message (moves from Blank to Draft, not findable in index)
     msg_data = {
-        'to': ['%s#%s' % (MY_FROM, MY_KEYID)],
-        'bcc': ['secret@test.com#%s' % MY_KEYID],
+        'to': ['{0!s}#{1!s}'.format(MY_FROM, MY_KEYID)],
+        'bcc': ['secret@test.com#{0!s}'.format(MY_KEYID)],
         'mid': [new_mid],
         'subject': ['This the TESTMSG subject'],
         'body': ['Hello world!'],
@@ -267,16 +267,16 @@ def test_composition():
     config.routes['default'] = {"command": '/no/such/file'}
     mp.sendmail()
     events = mp.eventlog('source=mailpile.plugins.compose.Sendit',
-                         'data_mid=%s' % new_mid).result['events']
+                         'data_mid={0!s}'.format(new_mid)).result['events']
     assert(len(events) == 1)
     assert(events[0]['flags'] == 'i')
     assert(len(mp.eventlog('incomplete').result['events']) == 1)
 
     # Second attempt should succeed!
-    config.routes.default.command = '%s -i %%(rcpt)s' % mailpile_send
+    config.routes.default.command = '{0!s} -i %(rcpt)s'.format(mailpile_send)
     mp.sendmail()
     events = mp.eventlog('source=mailpile.plugins.compose.Sendit',
-                         'data_mid=%s' % new_mid).result['events']
+                         'data_mid={0!s}'.format(new_mid)).result['events']
     assert(len(events) == 1)
     assert(events[0]['flags'] == 'c')
     assert(len(mp.eventlog('incomplete').result['events']) == 0)
@@ -299,7 +299,7 @@ def test_composition():
                    ['thisisauniquestring',
                     'in:mp_sig-verified', 'in:mp_enc-none', 'in:sent'],
                    ['subject:TESTMSG']):
-        say('Searching for: %s' % search)
+        say('Searching for: {0!s}'.format(search))
         assert(mp.search(*search).result['stats']['count'] == 1)
     # This is the base64 encoding of thisisauniquestring
     assert('dGhpc2lzYXVuaXF1ZXN0cmluZ' in contents(mailpile_sent))
@@ -324,7 +324,7 @@ def test_smtp():
     config.prepare_workers(mp._session, daemons=True)
     new_mid = mp.message_compose().result['thread_ids'][0]
     msg_data = {
-        'from': ['%s#%s' % (MY_FROM, MY_KEYID)],
+        'from': ['{0!s}#{1!s}'.format(MY_FROM, MY_KEYID)],
         'mid': [new_mid],
         'subject': ['This the OTHER TESTMSG...'],
         'body': ['Hello SMTP world!']
@@ -345,7 +345,7 @@ def test_html():
     say("Testing HTML")
 
     mp.output("jhtml")
-    assert('&lt;bang&gt;' in '%s' % mp.search('in:inbox').as_html())
+    assert('&lt;bang&gt;' in '{0!s}'.format(mp.search('in:inbox').as_html()))
     mp.output("text")
 
 
@@ -374,10 +374,10 @@ if '-i' in sys.argv:
     mp.set('prefs/vcard/importers/gravatar/0/active = true')
     mp.set('prefs/vcard/importers/gpg/0/active = true')
     mp._session.ui = ui
-    print '%s' % mp.help_splash()
+    print '{0!s}'.format(mp.help_splash())
     mp.Interact()
 
 
 ##[ Cleanup ]#################################################################
 config.stop_workers()
-os.system('rm -rf %s' % mailpile_home)
+os.system('rm -rf {0!s}'.format(mailpile_home))

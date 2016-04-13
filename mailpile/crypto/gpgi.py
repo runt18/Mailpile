@@ -28,7 +28,7 @@ _ = lambda s: s
 
 DEFAULT_KEYSERVERS = ["hkps://hkps.pool.sks-keyservers.net",
                       "hkp://subset.pool.sks-keyservers.net"]
-DEFAULT_KEYSERVER_OPTIONS = ['ca-cert-file=%s' % __file__]
+DEFAULT_KEYSERVER_OPTIONS = ['ca-cert-file={0!s}'.format(__file__)]
 
 GPG_KEYID_LENGTH = 8
 GNUPG_HOMEDIR = None  # None=use what gpg uses
@@ -343,7 +343,7 @@ class GnuPGRecordParser:
         pass  # FIXME
 
     def parse_unknown(self, line):
-        print "Unknown line with code '%s'" % (line,)
+        print "Unknown line with code '{0!s}'".format(line)
 
     def parse_none(line):
         pass
@@ -389,7 +389,7 @@ class StreamReader(Thread):
         self.start()
 
     def __str__(self):
-        return '%s(%s/%s, lines=%s)' % (Thread.__str__(self),
+        return '{0!s}({1!s}/{2!s}, lines={3!s})'.format(Thread.__str__(self),
                                         self.name, self.state, self.lines)
 
     def readin(self, fd, callback):
@@ -424,7 +424,7 @@ class StreamWriter(Thread):
         self.start()
 
     def __str__(self):
-        return '%s(%s/%s)' % (Thread.__str__(self), self.name, self.state)
+        return '{0!s}({1!s}/{2!s})'.format(Thread.__str__(self), self.name, self.state)
 
     def writeout(self, fd, output):
         if isinstance(output, (str, unicode)):
@@ -444,7 +444,7 @@ class StreamWriter(Thread):
             output.close()
         except:
             if not self.partial_write_ok:
-                print '%s: %s bytes left' % (self, total)
+                print '{0!s}: {1!s} bytes left'.format(self, total)
                 traceback.print_exc()
         finally:
             self.state = 'done'
@@ -522,7 +522,7 @@ class GnuPG:
         if self.session:
             self.session.debug(msg.rstrip())
         else:
-            print '%s' % str(msg).rstrip()
+            print '{0!s}'.format(str(msg).rstrip())
 
     def _debug_none(self, msg):
         pass
@@ -565,7 +565,7 @@ class GnuPG:
             args.insert(1, "--no-use-agent")
 
         if self.homedir:
-            args.insert(1, "--homedir=%s" % self.homedir)
+            args.insert(1, "--homedir={0!s}".format(self.homedir))
 
         gpg_retcode = -1
         proc = None
@@ -579,10 +579,10 @@ class GnuPG:
                 args.insert(2, "--passphrase-fd=0")
 
             if not self.passphrase and send_passphrase:
-                self.debug('Running WITHOUT PASSPHRASE %s' % ' '.join(args))
+                self.debug('Running WITHOUT PASSPHRASE {0!s}'.format(' '.join(args)))
                 self.debug(traceback.format_stack())
             else:
-                self.debug('Running %s' % ' '.join(args))
+                self.debug('Running {0!s}'.format(' '.join(args)))
 
             # Here we go!
             self.event.update_args(args)
@@ -602,24 +602,24 @@ class GnuPG:
 
             wtf = ' '.join(args)
             self.threads = {
-                "stderr": StreamReader('gpgi-stderr(%s)' % wtf,
+                "stderr": StreamReader('gpgi-stderr({0!s})'.format(wtf),
                                        proc.stderr, self.parse_stderr)
             }
 
             if outputfd:
                 self.threads["stdout"] = StreamReader(
-                    'gpgi-stdout-to-fd(%s)' % wtf,
+                    'gpgi-stdout-to-fd({0!s})'.format(wtf),
                     proc.stdout, outputfd.write, lines=False)
             else:
                 self.threads["stdout"] = StreamReader(
-                    'gpgi-stdout-parsed(%s)' % wtf,
+                    'gpgi-stdout-parsed({0!s})'.format(wtf),
                     proc.stdout, self.parse_stdout)
 
             if gpg_input:
                 # If we have output, we just stream it. Technically, this
                 # doesn't really need to be a thread at the moment.
-                self.debug('<<STDOUT<< %s' % gpg_input)
-                StreamWriter('gpgi-output(%s)' % wtf,
+                self.debug('<<STDOUT<< {0!s}'.format(gpg_input))
+                StreamWriter('gpgi-output({0!s})'.format(wtf),
                              proc.stdin, gpg_input,
                              partial_write_ok=partial_read_ok).join()
             else:
@@ -644,7 +644,7 @@ class GnuPG:
             outputfd.close()
 
         if gpg_retcode != 0 and _raise:
-            raise _raise('GnuPG failed, exit code: %s' % gpg_retcode)
+            raise _raise('GnuPG failed, exit code: {0!s}'.format(gpg_retcode))
 
         return gpg_retcode, self.outputbuffers
 
@@ -654,10 +654,10 @@ class GnuPG:
                 if thr.isAlive():
                     thr.join(timeout=15)
                     if thr.isAlive() and tries > 1:
-                        print 'WARNING: Failed to reap thread %s' % thr
+                        print 'WARNING: Failed to reap thread {0!s}'.format(thr)
 
     def parse_status(self, line, *args):
-        self.debug('<<STATUS<< %s' % line)
+        self.debug('<<STATUS<< {0!s}'.format(line))
         line = line.replace("[GNUPG:] ", "")
         if line == "":
             return
@@ -666,14 +666,14 @@ class GnuPG:
 
     def parse_stdout(self, line):
         self.event.update_stdout(line)
-        self.debug('<<STDOUT<< %s' % line)
+        self.debug('<<STDOUT<< {0!s}'.format(line))
         self.outputbuffers["stdout"].append(line)
 
     def parse_stderr(self, line):
         self.event.update_stderr(line)
         if line.startswith("[GNUPG:] "):
             return self.parse_status(line)
-        self.debug('<<STDERR<< %s' % line)
+        self.debug('<<STDERR<< {0!s}'.format(line))
         self.outputbuffers["stderr"].append(line)
 
     def parse_keylist(self, keylist):
@@ -1276,7 +1276,7 @@ class GnuPG:
             is_hex_keyid = all(c in hex_digits for c in term)
 
         if is_hex_keyid:
-            return '0x%s' % term
+            return '0x{0!s}'.format(term)
         else:
             return term
 
@@ -1289,7 +1289,7 @@ class GnuPG:
                     "--command-fd=0",
                     "--status-fd=1"] + (gpg_args or [])
         if self.homedir:
-            gpg_args.insert(1, "--homedir=%s" % self.homedir)
+            gpg_args.insert(1, "--homedir={0!s}".format(self.homedir))
 
         proc = None
         try:
@@ -1444,7 +1444,7 @@ class GnuPGExpectScript(threading.Thread):
                 self.variables['passphrase'] = '!!<SPS'
 
     def __str__(self):
-        return '%s: %s' % (threading.Thread.__str__(self), self.state)
+        return '{0!s}: {1!s}'.format(threading.Thread.__str__(self), self.state)
 
     running = property(lambda self: (self.state in self.RUNNING_STATES))
     failed = property(lambda self: False)
@@ -1490,7 +1490,7 @@ class GnuPGExpectScript(threading.Thread):
                 raise TimedOut()
         except TimedOut:
             timebox[0] = 0
-            print 'Boo! %s not found in %s' % (exp, self.before)
+            print 'Boo! {0!s} not found in {1!s}'.format(exp, self.before)
             raise
 
     def run_script(self, proc, script):

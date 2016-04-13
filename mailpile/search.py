@@ -258,7 +258,7 @@ class MailIndex(object):
                             if session and len(self.INDEX) % 107 == 100:
                                 session.ui.mark(
                                     _('Loading metadata index...') +
-                                    ' %s' % len(self.INDEX))
+                                    ' {0!s}'.format(len(self.INDEX)))
                         except ValueError:
                             bogus = True
 
@@ -300,7 +300,7 @@ class MailIndex(object):
 
         if bogus_lines:
             bogus_file = (self.config.mailindex_file() +
-                          '.bogus.%x' % time.time())
+                          '.bogus.{0:x}'.format(time.time()))
             with open(bogus_file, 'w') as bl:
                 bl.write('\n'.join(bogus_lines))
             if session:
@@ -368,7 +368,7 @@ class MailIndex(object):
                 emails = []
                 for eid in range(old_emails_saved, total):
                     quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
-                    emails.append('@%s\t%s\n' % (b36(eid), quoted_email))
+                    emails.append('@{0!s}\t{1!s}\n'.format(b36(eid), quoted_email))
                 self.EMAILS_SAVED = total
 
             # Unlocked, try to write this out
@@ -400,16 +400,16 @@ class MailIndex(object):
                 session.ui.mark(_("Saving metadata index..."))
 
             idxfile = self.config.mailindex_file()
-            newfile = '%s.new' % idxfile
+            newfile = '{0!s}.new'.format(idxfile)
 
             data = [
                 '# This is the mailpile.py index file.\n',
-                '# We have %d messages!\n' % len(self.INDEX)
+                '# We have {0:d} messages!\n'.format(len(self.INDEX))
             ]
             self.EMAILS_SAVED = email_counter = len(self.EMAILS)
             for eid in range(0, email_counter):
                 quoted_email = quote(self.EMAILS[eid].encode('utf-8'))
-                data.append('@%s\t%s\n' % (b36(eid), quoted_email))
+                data.append('@{0!s}\t{1!s}\n'.format(b36(eid), quoted_email))
             index_counter = len(self.INDEX)
             for i in range(0, index_counter):
                 data.append(self.INDEX[i] + '\n')
@@ -541,7 +541,7 @@ class MailIndex(object):
 
     def _update_location(self, session, msg_idx_pos, msg_ptr):
         if 'rescan' in session.config.sys.debug:
-            session.ui.debug('Moved? %s -> %s' % (b36(msg_idx_pos), msg_ptr))
+            session.ui.debug('Moved? {0!s} -> {1!s}'.format(b36(msg_idx_pos), msg_ptr))
 
         msg_info = self.get_msg_at_idx_pos(msg_idx_pos)
         msg_ptrs = msg_info[self.MSG_PTRS].split(',')
@@ -626,7 +626,7 @@ class MailIndex(object):
     def encode_msg_id(self, msg_id):
         # Discard any data seen outside the first angle-brackets
         if '<' in msg_id:
-            new_msg_id = '<%s>' % msg_id.split('<')[1].split('>')[0]
+            new_msg_id = '<{0!s}>'.format(msg_id.split('<')[1].split('>')[0])
             if len(new_msg_id) > 2:
                 msg_id = new_msg_id
         return b64c(sha1b64(msg_id.strip()))
@@ -821,7 +821,7 @@ class MailIndex(object):
     def scan_one_message(self, session, mailbox_idx, mbox, msg_mbox_key,
                          wait=False, **kwargs):
         args = [session, mailbox_idx, mbox, msg_mbox_key]
-        task = 'scan:%s/%s' % (mailbox_idx, msg_mbox_key)
+        task = 'scan:{0!s}/{1!s}'.format(mailbox_idx, msg_mbox_key)
         if wait:
             return session.config.scan_worker.do(
                 session, task, lambda: self._real_scan_one(*args, **kwargs))
@@ -844,8 +844,7 @@ class MailIndex(object):
                                                        event=event)
 
         if 'rescan' in session.config.sys.debug:
-            session.ui.debug('Reading message %s/%s'
-                             % (mailbox_idx, msg_mbox_idx))
+            session.ui.debug('Reading message {0!s}/{1!s}'.format(mailbox_idx, msg_mbox_idx))
         try:
             if msg_data:
                 msg_fd = cStringIO.StringIO(msg_data)
@@ -1103,7 +1102,7 @@ class MailIndex(object):
         # Part 1: Figure out parent stuff.
         if in_reply_to:
             if '<' in in_reply_to:
-                irt_ref = '<%s>' % in_reply_to.split('<')[1].split('>')[0]
+                irt_ref = '<{0!s}>'.format(in_reply_to.split('<')[1].split('>')[0])
                 while irt_ref in refs:
                     refs.remove(irt_ref)
                 refs.append(irt_ref)
@@ -1264,7 +1263,7 @@ class MailIndex(object):
         if eid is None:
             eid = len(self.EMAILS)
             self.EMAILS.append('')
-        self.EMAILS[eid] = '%s (%s)' % (email, name or email)
+        self.EMAILS[eid] = '{0!s} ({1!s})'.format(email, name or email)
         self.EMAIL_IDS[email.lower()] = eid
         # FIXME: This needs to get written out...
         return eid
@@ -1359,7 +1358,7 @@ class MailIndex(object):
                         if kw in keywordmap:
                             del keywordmap[kw]
                     if t[0] != '-':
-                        keywordmap[unicode('%s:in' % t[1:])] = msg_idx_list
+                        keywordmap[unicode('{0!s}:in'.format(t[1:]))] = msg_idx_list
 
         return set(keywordmap.keys())
 
@@ -1455,7 +1454,7 @@ class MailIndex(object):
                                  in re.findall(WORD_REGEXP, att.lower())])
                 for kw, ext_list in ATT_EXTS.iteritems():
                     if att.lower().rsplit('.', 1)[-1] in ext_list:
-                        keywords.append('%s:has' % kw)
+                        keywords.append('{0!s}:has'.format(kw))
                 textpart = (textpart or '') + ' ' + att
 
             if textpart:
@@ -1508,16 +1507,16 @@ class MailIndex(object):
                         keywords.extend(kwe(self, msg, 'text/plain', text,
                                             body_info=body_info))
 
-        keywords.append('%s:id' % msg_id)
+        keywords.append('{0!s}:id'.format(msg_id))
         keywords.extend(re.findall(WORD_REGEXP,
                                    self.hdr(msg, 'subject').lower()))
         keywords.extend(re.findall(WORD_REGEXP,
                                    self.hdr(msg, 'from').lower()))
         if mailbox:
-            keywords.append('%s:mailbox' % FormatMbxId(mailbox).lower())
+            keywords.append('{0!s}:mailbox'.format(FormatMbxId(mailbox).lower()))
 
         # This is a signal for the bayesian filters to discriminate by MUA.
-        keywords.append('%s:hp' % HeaderPrint(msg))
+        keywords.append('{0!s}:hp'.format(HeaderPrint(msg)))
 
         is_list = False
         for key in msg.keys():
@@ -1540,9 +1539,9 @@ class MailIndex(object):
                 emails = [e for e in emails if
                           (len(e) < 40) or ('+' not in e and '/' not in e)]
 
-                keywords.extend(['%s:%s' % (t, key_lower) for t in words])
-                keywords.extend(['%s:%s' % (e, key_lower) for e in emails])
-                keywords.extend(['%s:email' % e for e in emails])
+                keywords.extend(['{0!s}:{1!s}'.format(t, key_lower) for t in words])
+                keywords.extend(['{0!s}:{1!s}'.format(e, key_lower) for e in emails])
+                keywords.extend(['{0!s}:email'.format(e) for e in emails])
 
         # Personal mail: not from lists or common robots?
         msg_from = msg.get('from', '').lower()
@@ -1560,7 +1559,7 @@ class MailIndex(object):
 
         for key in EXPECTED_HEADERS:
             if not msg[key]:
-                keywords.append('%s:missing' % key)
+                keywords.append('{0!s}:missing'.format(key))
 
         for extract in _plugins.get_meta_kw_extractors():
             keywords.extend(extract(self, msg_mid, msg, msg_size, msg_ts,
@@ -1603,7 +1602,7 @@ class MailIndex(object):
 
         # Apply the defaults for this mail source / mailbox.
         if apply_tags:
-            keywords |= set(['%s:in' % tid for tid in apply_tags])
+            keywords |= set(['{0!s}:in'.format(tid) for tid in apply_tags])
         if process_new:
             process_new(msg, msg_metadata_kws, msg_ts, keywords, snippet)
         elif incoming:
@@ -1613,7 +1612,7 @@ class MailIndex(object):
                 ProcessNew(session, msg, msg_metadata_kws, msg_ts,
                            keywords, snippet)
             if apply_tags is None:
-                keywords |= set(['%s:in' % tag._key for tag in
+                keywords |= set(['{0!s}:in'.format(tag._key) for tag in
                                  self.config.get_tags(type='inbox')])
 
         for hook in filter_hooks or []:
@@ -1621,7 +1620,7 @@ class MailIndex(object):
                             incoming=incoming)
 
         if 'keywords' in self.config.sys.debug:
-            print 'KEYWORDS: %s' % keywords
+            print 'KEYWORDS: {0!s}'.format(keywords)
 
         for word in keywords:
             if (word.startswith('__') or
@@ -1681,11 +1680,11 @@ class MailIndex(object):
         self.update_msg_tags(msg_idx, msg_info)
 
         if not original_line:
-            dirty_tags = [u'%s:in' % self.config.tags[t].slug for t in
+            dirty_tags = [u'{0!s}:in'.format(self.config.tags[t].slug) for t in
                           self.get_tags(msg_info=msg_info)]
             self.config.command_cache.mark_dirty(
-                [u'mail:all', u'%s:msg' % msg_idx,
-                 u'%s:thread' % int(msg_thr_mid, 36)] + dirty_tags)
+                [u'mail:all', u'{0!s}:msg'.format(msg_idx),
+                 u'{0!s}:thread'.format(int(msg_thr_mid, 36))] + dirty_tags)
             CachedSearchResultSet.DropCaches(msg_idxs=[msg_idx])
             self.MODIFIED.add(msg_idx)
             try:
@@ -1782,9 +1781,9 @@ class MailIndex(object):
                 self.TAGS[tag_id] = eids
         try:
             self.config.command_cache.mark_dirty(
-                [u'mail:all', u'%s:in' % self.config.tags[tag_id].slug] +
-                [u'%s:msg' % e_idx for e_idx in added] +
-                [u'%s:thread' % int(mid, 36) for mid in threads])
+                [u'mail:all', u'{0!s}:in'.format(self.config.tags[tag_id].slug)] +
+                [u'{0!s}:msg'.format(e_idx) for e_idx in added] +
+                [u'{0!s}:thread'.format(int(mid, 36)) for mid in threads])
         except:
             pass
         return added
@@ -1836,9 +1835,9 @@ class MailIndex(object):
                 self.TAGS[tag_id] -= eids
         try:
             self.config.command_cache.mark_dirty(
-                [u'%s:in' % self.config.tags[tag_id].slug] +
-                [u'%s:msg' % e_idx for e_idx in removed] +
-                [u'%s:thread' % int(mid, 36) for mid in threads])
+                [u'{0!s}:in'.format(self.config.tags[tag_id].slug)] +
+                [u'{0!s}:msg'.format(e_idx) for e_idx in removed] +
+                [u'{0!s}:thread'.format(int(mid, 36)) for mid in threads])
         except:
             pass
         return removed
@@ -1850,11 +1849,11 @@ class MailIndex(object):
         if tag:
             tag_id = tag._key
             for subtag in self.config.get_tags(parent=tag_id):
-                results.extend(hits('%s:in' % subtag._key))
+                results.extend(hits('{0!s}:in'.format(subtag._key)))
             if tag.magic_terms and recursion < 5:
                 results.extend(self.search(session, [tag.magic_terms],
                                            recursion=recursion+1).as_set())
-        results.extend(hits('%s:in' % tag_id))
+        results.extend(hits('{0!s}:in'.format(tag_id)))
         return results
 
     def _vfs_hits(self, session, searchterms):
@@ -1914,7 +1913,7 @@ class MailIndex(object):
                     where = searchterms.index(p + 'is:unread')
                     new = session.config.get_tags(type='unread')
                     if new:
-                        searchterms[where] = p + 'in:%s' % new[0].slug
+                        searchterms[where] = p + 'in:{0!s}'.format(new[0].slug)
                 for t in [term for term in searchterms
                           if term.startswith(p + 'tag:')]:
                     where = searchterms.index(t)
@@ -1966,21 +1965,21 @@ class MailIndex(object):
                         emails += [vcl.value for vcl in vc.get_all('email')]
                     for email in set(emails):
                         if email:
-                            rt.extend(hits('%s:%s' % (email,
+                            rt.extend(hits('{0!s}:{1!s}'.format(email,
                                                       term.split(':')[0])))
                 elif term == 'is:encrypted':
                     for status in EncryptionInfo.STATUSES:
                         if status in CryptoInfo.STATUSES:
                             continue
                         rt.extend(self.search_tag(session,
-                                                  'in:mp_enc-%s' % status,
+                                                  'in:mp_enc-{0!s}'.format(status),
                                                   hits, recursion=recursion))
                 elif term == 'is:signed':
                     for status in SignatureInfo.STATUSES:
                         if status in CryptoInfo.STATUSES:
                             continue
                         rt.extend(self.search_tag(session,
-                                                  'in:mp_sig-%s' % status,
+                                                  'in:mp_sig-{0!s}'.format(status),
                                                   hits, recursion=recursion))
                 else:
                     t = term.split(':', 1)
@@ -1988,7 +1987,7 @@ class MailIndex(object):
                     if fnc:
                         rt.extend(fnc(self.config, self, term, hits))
                     else:
-                        rt.extend(hits('%s:%s' % (t[1], t[0])))
+                        rt.extend(hits('{0!s}:{1!s}'.format(t[1], t[0])))
             else:
                 rt.extend(hits(term))
 
@@ -2015,7 +2014,7 @@ class MailIndex(object):
                 ('tags' in self.config) and
                 (not session or 'all' not in order)):
             invisible = self.config.get_tags(flag_hides=True)
-            exclude_terms = ['in:%s' % i._key for i in invisible]
+            exclude_terms = ['in:{0!s}'.format(i._key) for i in invisible]
             for tag in invisible:
                 tid = tag._key
                 for p in ('in:%s', '+in:%s', '-in:%s'):
@@ -2025,7 +2024,7 @@ class MailIndex(object):
                         exclude_terms = []
             if len(exclude_terms) > 1:
                 exclude_terms = ([exclude_terms[0]] +
-                                 ['+%s' % e for e in exclude_terms[1:]])
+                                 ['+{0!s}'.format(e) for e in exclude_terms[1:]])
             # Recursing to pull the excluded terms from cache as well
             exclude = self.search(session, exclude_terms).as_set()
 
@@ -2088,7 +2087,7 @@ class MailIndex(object):
                 results.sort()
             elif how.endswith('random'):
                 now = time.time()
-                results.sort(key=lambda k: sha1b64('%s%s' % (now, k)))
+                results.sort(key=lambda k: sha1b64('{0!s}{1!s}'.format(now, k)))
             else:
                 did_sort = False
                 for order in self.INDEX_SORT:
@@ -2171,6 +2170,6 @@ if __name__ == '__main__':
     import sys
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={})
-    print '%s' % (results, )
+    print '{0!s}'.format(results )
     if results.failed:
         sys.exit(1)

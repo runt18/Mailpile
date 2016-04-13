@@ -125,7 +125,7 @@ def secure_urlget(session, url, data=None, timeout=30, anonymous=False):
         raise IOError("Web content is disabled by policy")
 
     if url[:5].lower() not in ('http:', 'https'):
-        raise IOError('Non-HTTP URLs are forbidden: %s' % url)
+        raise IOError('Non-HTTP URLs are forbidden: {0!s}'.format(url))
 
     if url.startswith('https:'):
         conn_need, conn_reject = [ConnBroker.OUTGOING_HTTPS], []
@@ -162,9 +162,9 @@ def make_csrf_token(req, session_id, ts=None):
     Generate a hashed token from the current timestamp, session ID and
     the server secret, to avoid CSRF attacks.
     """
-    ts = '%x' % (ts if (ts is not None) else time.time())
+    ts = '{0:x}'.format((ts if (ts is not None) else time.time()))
     payload = [req.server.secret, session_id, ts]
-    return '%s-%s' % (ts, b64w(sha512b64('-'.join(payload))))
+    return '{0!s}-{1!s}'.format(ts, b64w(sha512b64('-'.join(payload))))
 
 
 def valid_csrf_token(req, session_id, csrf_token):

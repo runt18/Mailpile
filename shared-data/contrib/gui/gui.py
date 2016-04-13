@@ -18,7 +18,7 @@ __GUI__ = None
 
 
 def indicator(command, **kwargs):
-    __GUI__.stdin.write('%s %s\n' % (command, json.dumps(kwargs)))
+    __GUI__.stdin.write('{0!s} {1!s}\n'.format(command, json.dumps(kwargs)))
 
 
 def startup(config):
@@ -46,7 +46,7 @@ def _real_startup(config):
                                         session_id=session_id)
         cookie = config.http_worker.httpd.session_cookie
         sspec = config.http_worker.httpd.sspec
-        base_url = 'http://%s:%s%s' % sspec
+        base_url = 'http://{0!s}:{1!s}{2!s}'.format(*sspec)
 
         script_dir = os.path.dirname(os.path.realpath(__file__))
         script = os.path.join(script_dir, 'gui-o-matic.py')

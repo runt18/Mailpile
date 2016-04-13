@@ -47,7 +47,7 @@ class CryptoInfo(dict):
 
     def _set_status(self, value):
         if value not in self.STATUSES:
-            print 'Bogus status for %s: %s' % (type(self), value)
+            print 'Bogus status for {0!s}: {1!s}'.format(type(self), value)
         assert(value in self.STATUSES)
         self._status = value
         self.mix_bubbles()
@@ -56,7 +56,7 @@ class CryptoInfo(dict):
         assert(item in self.KEYS)
         if item == "status":
             if value not in self.STATUSES:
-                print 'Bogus status for %s: %s' % (type(self), value)
+                print 'Bogus status for {0!s}: {1!s}'.format(type(self), value)
             assert(value in self.STATUSES)
             if self._status is None:  # Capture initial value
                 self._status = value
@@ -106,13 +106,13 @@ class CryptoInfo(dict):
             if (self.bubbly and
                    status != mix.part_status and
                    not mix.part_status.startswith('mixed-')):
-                mix["status"] = "mixed-%s" % mix.part_status
+                mix["status"] = "mixed-{0!s}".format(mix.part_status)
             else:
                 mix["status"] = mix.part_status
             self._overwrite_with(mix)
         elif not status.startswith("mixed-"):
             # ci is LESS interesting
-            self["status"] = 'mixed-%s' % status
+            self["status"] = 'mixed-{0!s}'.format(status)
 
 
 class EncryptionInfo(CryptoInfo):

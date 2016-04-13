@@ -96,7 +96,7 @@ class SeleniumScreenshotOnExceptionAspecter(type):
                 results = method(*args, **kw)
             except:
                 test_self = args[0]
-                filename = '%s_screenshot.png' % method.__name__
+                filename = '{0!s}_screenshot.png'.format(method.__name__)
                 test_self.take_screenshot(filename)
                 raise
 
@@ -151,7 +151,7 @@ class MailpileSeleniumTest(MailPileUnittest):
 
     @classmethod
     def _get_mailpile_url(cls):
-        return 'http://%s:%s/%s' % cls._get_mailpile_sspec()
+        return 'http://{0!s}:{1!s}/{2!s}'.format(*cls._get_mailpile_sspec())
 
     @classmethod
     def _start_web_server(cls):
@@ -202,7 +202,7 @@ class MailpileSeleniumTest(MailPileUnittest):
         MailpileSeleniumTest._stop_selenium_driver()
 
     def go_to_mailpile_home(self):
-        self.driver.get('%s/in/inbox' % self._get_mailpile_url())
+        self.driver.get('{0!s}/in/inbox'.format(self._get_mailpile_url()))
 
     def take_screenshot(self, filename):
         try:
@@ -216,7 +216,7 @@ class MailpileSeleniumTest(MailPileUnittest):
 
     def navigate_to(self, name):
         contacts = self.find_element_by_xpath(
-            '//a[@alt="%s"]/span' % name)
+            '//a[@alt="{0!s}"]/span'.format(name))
         self.assertTrue(contacts.is_displayed())
         contacts.click()
 
@@ -253,7 +253,7 @@ class MailpileSeleniumTest(MailPileUnittest):
         return self.driver.find_element_by_id(id)
 
     def find_element_containing_text(self, text):
-        return self.driver.find_element_by_xpath("//*[contains(.,'%s')]" % text)
+        return self.driver.find_element_by_xpath("//*[contains(.,'{0!s}')]".format(text))
 
     def find_element_by_xpath(self, xpath):
         return self.driver.find_element_by_xpath(xpath)

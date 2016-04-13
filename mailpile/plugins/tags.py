@@ -171,7 +171,7 @@ def Slugify(tag_name, tags=None):
     n = 1
     while tags and slug in [t.slug for t in tags.values()]:
         n += 1
-        slug = Slugify('%s-%s' % (tag_name, n))
+        slug = Slugify('{0!s}-{1!s}'.format(tag_name, n))
     return slug
 
 
@@ -275,19 +275,19 @@ class Tag(TagCommand):
             convs = (_n('%d conversation', '%d conversation', count)
                      if self.result.get('conversations') else
                      _n('%d message', '%d messages', count)) % count
-            return '%s (%s)' % (whats, convs)
+            return '{0!s} ({1!s})'.format(whats, convs)
 
     def _get_ops_and_msgids(self, words):
         # If we are asked to both add and remove a tag, we do neither as
         # that is nonsense without knowing the order of the operations.
         deling = set(self.data.get('del', []))
         adding = set(self.data.get('add', []))
-        ops = (['-%s' % t for t in (deling-adding) if t] +
-               ['+%s' % t for t in (adding-deling) if t])
+        ops = (['-{0!s}'.format(t) for t in (deling-adding) if t] +
+               ['+{0!s}'.format(t) for t in (adding-deling) if t])
         conversations = truthy(self.data.get('conversations', ['auto'])[0],
                                special={'auto': None})
         if 'mid' in self.data:
-            words = ['=%s' % m for m in self.data['mid']]
+            words = ['={0!s}'.format(m) for m in self.data['mid']]
         else:
             while words and words[0][:1] in ('-', '+'):
                 op = words.pop(0)
@@ -344,7 +344,7 @@ class Tag(TagCommand):
                                                           default=[]):
                         idx.add_tag(self.session, t._key, msg_idxs=msg_ids)
             else:
-                self.session.ui.warning('Unknown tag: %s' % op)
+                self.session.ui.warning('Unknown tag: {0!s}'.format(op))
 
         if rv['conversations']:
             undo_msg = _n('Untag %d conversation',
@@ -477,12 +477,12 @@ class AddTag(TagCommand):
         # Check Slug is valid
         for slug in slugs:
             if slug != Slugify(slug, config.tags):
-                return self._error('Invalid tag slug: %s' % slug)
+                return self._error('Invalid tag slug: {0!s}'.format(slug))
 
         # Check Tag is unique
         for tag in config.tags.values():
             if tag.slug in slugs:
-                return self._error('Tag already exists: %s/%s' % (tag.slug,
+                return self._error('Tag already exists: {0!s}/{1!s}'.format(tag.slug,
                                                                   tag.name))
 
         tags = [{'name': n, 'slug': s} for (n, s) in zip(names, slugs)]
@@ -519,7 +519,7 @@ class ListTags(TagCommand):
     def cache_requirements(self, result):
         if result:
             return set([u'!config'] +
-                       [u'%s:in' % ti['slug'] for ti in result.result['tags']])
+                       [u'{0!s}:in'.format(ti['slug']) for ti in result.result['tags']])
         else:
             return set([u'!config'])
 
@@ -534,8 +534,8 @@ class ListTags(TagCommand):
                 stats = tags[i]['stats']
                 text.append(('%s%5.5s %-18.18s'
                              ) % ((i % wrap) == 0 and '  ' or '',
-                                  '%s' % (stats.get('sum_new', stats['new'])
-                                          or ''),
+                                  '{0!s}'.format((stats.get('sum_new', stats['new'])
+                                          or '')),
                                   tags[i]['name'])
                             + ((i % wrap) == (wrap - 1) and '\n' or ''))
             return ''.join(text) + '\n'
@@ -556,7 +556,7 @@ class ListTags(TagCommand):
                 search[kw] = self.data[kw]
             elif kw not in ('only', 'not', '_method', '_recursion', 'context'):
                 from mailpile.urlmap import BadDataError
-                raise BadDataError('Bad variable (%s)' % (kw))
+                raise BadDataError('Bad variable ({0!s})'.format((kw)))
 
         wanted = [t.lower() for t in args if not t.startswith('!')]
         unwanted = [t[1:].lower() for t in args if t.startswith('!')]
@@ -670,15 +670,15 @@ class DeleteTag(TagCommand):
 
                 # FIXME: Refuse to delete tag if in use by filters
 
-                rv = (Search(clean_session, arg=['tag:%s' % tag_id]).run() and
-                      Tag(clean_session, arg=['-%s' % tag_id, 'all']).run())
+                rv = (Search(clean_session, arg=['tag:{0!s}'.format(tag_id)]).run() and
+                      Tag(clean_session, arg=['-{0!s}'.format(tag_id), 'all']).run())
                 if rv:
                     del config.tags[tag_id]
                     result.append({'name': tag.name, 'tid': tag_id})
                 else:
-                    raise Exception('That failed: %s' % rv)
+                    raise Exception('That failed: {0!s}'.format(rv))
             else:
-                self._error('No such tag %s' % tag_name)
+                self._error('No such tag {0!s}'.format(tag_name))
         if result:
             self._reorder_all_tags()
             self.finish(save=True)
@@ -740,9 +740,9 @@ class Filter(FilterCommand):
 
         # Convert HTTP variable tag ops...
         for tag in self.data.get('add-tag', []):
-            args.append('+%s' % tag)
+            args.append('+{0!s}'.format(tag))
         for tag in self.data.get('del-tag', []):
-            args.append('-%s' % tag)
+            args.append('-{0!s}'.format(tag))
         if self._truthy('mark-read'):
             args.append('-new')
         if self._truthy('skip-inbox'):
@@ -800,7 +800,7 @@ class Filter(FilterCommand):
                 raise UsageError(_('No such tag: %s') % tag)
 
         if not args:
-            args = ['Filter for %s' % ' '.join(tags)]
+            args = ['Filter for {0!s}'.format(' '.join(tags))]
 
         if auto_tag and 'notag' not in flags:
             if not Tag(session, arg=tags + ['all']).run(save=False):
@@ -826,7 +826,7 @@ class Filter(FilterCommand):
             if tag_color:
                 config.tags[primary_tag].label_color = tag_color
             config.tags[primary_tag].name = comment
-            config.tags[primary_tag].slug = 'saved-search-%s' % filter_id
+            config.tags[primary_tag].slug = 'saved-search-{0!s}'.format(filter_id)
 
         self.finish(save=save)
 
@@ -856,7 +856,7 @@ class DeleteFilter(FilterCommand):
                 self.session.config.filter_delete(fid)
                 removed += 1
             else:
-                session.ui.warning('Failed to remove %s' % fid)
+                session.ui.warning('Failed to remove {0!s}'.format(fid))
         if removed:
             self.finish()
 
@@ -895,7 +895,7 @@ class ListFilters(Command):
             for tterm in tags.split():
                 tagname = self.session.config.tags.get(
                     tterm[1:], {}).get('slug', '(None)')
-                human_tags.append('%s%s' % (tterm[0], tagname))
+                human_tags.append('{0!s}{1!s}'.format(tterm[0], tagname))
 
             skip = False
             args = list(self.args)

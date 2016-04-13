@@ -19,7 +19,7 @@ class MailpileMailbox(maildir.MailpileMailbox):
                os.path.isdirs(os.path.join(fn, 'chats')) and
                os.path.isdirs(os.path.join(fn, '.info'))):
             return (fn, )
-        raise ValueError('Not a Gmvault: %s' % fn)
+        raise ValueError('Not a Gmvault: {0!s}'.format(fn))
 
     def __init__(self, dirname, factory=rfc822.Message, create=True):
         maildir.MailpileMailbox.__init__(self, dirname, factory, create)

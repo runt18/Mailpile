@@ -158,7 +158,7 @@ def ConfigPrinter(cfg, indent=''):
         pairer = enumerate(cfg)
     for key, val in pairer:
         if hasattr(val, 'rules'):
-            preamble = '[%s: %s] ' % (val._NAME, val._COMMENT)
+            preamble = '[{0!s}: {1!s}] '.format(val._NAME, val._COMMENT)
         else:
             preamble = ''
         if isinstance(val, (dict, list, tuple)):
@@ -170,9 +170,9 @@ def ConfigPrinter(cfg, indent=''):
                        '' % (key, preamble, b, ConfigPrinter(val, '  '), e)
                        ).replace('\n  \n', ''))
         elif isinstance(val, (str, unicode)):
-            rv.append('%s: "%s"' % (key, val))
+            rv.append('{0!s}: "{1!s}"'.format(key, val))
         else:
-            rv.append('%s: %s' % (key, val))
+            rv.append('{0!s}: {1!s}'.format(key, val))
     return indent + ',\n'.join(rv).replace('\n', '\n'+indent)
 
 
@@ -216,7 +216,7 @@ class CommentedEscapedConfigParser(ConfigParser.RawConfigParser):
             value = value[:-1] + '%20'
         if comment:
             pad = ' ' * (25 - len(key) - len(value)) + ' ; '
-            value = '%s%s%s' % (value, pad, comment)
+            value = '{0!s}{1!s}{2!s}'.format(value, pad, comment)
         return ConfigParser.RawConfigParser.set(self, section, key, value)
 
     def _decode_value(self, value):
@@ -446,9 +446,9 @@ def WebRootCheck(path):
         ...
     ValueError: Invalid web root: /foo/$%!
     """
-    p = re.sub('/+', '/', '/%s/' % path)[:-1]
+    p = re.sub('/+', '/', '/{0!s}/'.format(path))[:-1]
     if (p != CleanText(p, banned=CleanText.NONPATH).clean):
-        raise ValueError('Invalid web root: %s' % path)
+        raise ValueError('Invalid web root: {0!s}'.format(path))
     return p
 
 
@@ -677,7 +677,7 @@ def RuledContainer(pcls):
             config = config or CommentedEscapedConfigParser()
             section = self._name
             if self._comment:
-                section += ': %s' % self._comment
+                section += ': {0!s}'.format(self._comment)
             added_section = False
 
             keys = self.rules.keys()
@@ -727,8 +727,7 @@ def RuledContainer(pcls):
             if not ((isinstance(rule, (list, tuple))) and
                     (key == CleanText(key, banned=CleanText.NONVARS).clean) and
                     (not self.real_hasattr(key))):
-                raise TypeError('add_rule(%s, %s): Bad key or rule.'
-                                % (key, rule))
+                raise TypeError('add_rule({0!s}, {1!s}): Bad key or rule.'.format(key, rule))
 
             orule, rule = rule, ConfigRule(*rule[:])
             if hasattr(orule, '_types'):
@@ -742,7 +741,7 @@ def RuledContainer(pcls):
             except TypeError:
                 pass
 
-            name = '%s/%s' % (self._name, key)
+            name = '{0!s}/{1!s}'.format(self._name, key)
             comment = rule[self.RULE_COMMENT]
             value = rule[self.RULE_DEFAULT]
 
@@ -798,7 +797,7 @@ def RuledContainer(pcls):
                 rule = rule[:]
                 rule[self.RULE_CHECKER] = _MakeCheck(
                     ConfigDict,
-                    '%s/%s' % (self._name, key),
+                    '{0!s}/{1!s}'.format(self._name, key),
                     rule[self.RULE_COMMENT],
                     rule[self.RULE_CHECKER])
             return rule
@@ -872,7 +871,7 @@ def RuledContainer(pcls):
         def __passkey__(self, key, value):
             if hasattr(value, '__passkey__'):
                 value._key = key
-                value._name = '%s/%s' % (self._name, key)
+                value._name = '{0!s}/{1!s}'.format(self._name, key)
 
         def __passkey_recurse__(self, key, value):
             if hasattr(value, '__passkey__'):
@@ -980,7 +979,7 @@ class ConfigList(RuledContainer(list)):
         if hasattr(value, '__passkey__'):
             key = b36(key).lower()
             value._key = key
-            value._name = '%s/%s' % (self._name, key)
+            value._name = '{0!s}/{1!s}'.format(self._name, key)
 
     def __fixkey__(self, key):
         if isinstance(key, (str, unicode)):
@@ -1595,7 +1594,7 @@ class ConfigManager(ConfigDict):
         if (self._master_key_passgen != master_passphrase.generation
                 or self._master_key_ondisk != self.master_key):
             if os.path.exists(keyfile):
-                want_renamed_keyfile = keyfile + ('.%x' % time.time())
+                want_renamed_keyfile = keyfile + ('.{0:x}'.format(time.time()))
 
         if not want_renamed_keyfile and os.path.exists(keyfile):
             # Key file exists, nothing needs to be changed. Happy!
@@ -1634,7 +1633,7 @@ class ConfigManager(ConfigDict):
         return False
 
     def _unlocked_save(self, session=None):
-        newfile = '%s.new' % self.conffile
+        newfile = '{0!s}.new'.format(self.conffile)
         pubfile = self.conf_pub
         keyfile = self.conf_key
 
@@ -1805,7 +1804,7 @@ class ConfigManager(ConfigDict):
                 mbx_id = FormatMbxId(mailbox_id)
                 mfn = self.sys.mailbox[mbx_id]
                 src = self._find_mail_source(mailbox_id, path=mfn)
-                pfn = 'pickled-mailbox.%s' % mbx_id.lower()
+                pfn = 'pickled-mailbox.{0!s}'.format(mbx_id.lower())
                 if prefer_local and src and src.mailbox[mbx_id] is not None:
                     mfn = src and src.mailbox[mbx_id].local or mfn
                 else:
@@ -1854,7 +1853,7 @@ class ConfigManager(ConfigDict):
                      for p in self._mbox_cache[:-MAX_CACHED_MBOXES]]
         for pfn, mbx_id in flush:
             self.save_worker.add_unique_task(
-                session, 'Save mailbox %s (drop=%s)' % (mbx_id, False),
+                session, 'Save mailbox {0!s} (drop={1!s})'.format(mbx_id, False),
                 lambda: self.uncache_mailbox(session, pfn, drop=False))
 
     def flush_mbox_cache(self, session, clear=True, wait=False):
@@ -1866,7 +1865,7 @@ class ConfigManager(ConfigDict):
             flush = [(p[0], p[1]) for p in self._mbox_cache]
         for pfn, mbx_id in flush:
             saver(session,
-                  'Save mailbox %s (drop=%s)' % (mbx_id, clear),
+                  'Save mailbox {0!s} (drop={1!s})'.format(mbx_id, clear),
                   lambda: self.uncache_mailbox(session, pfn,
                                                drop=clear, force_save=True),
                   unique=True)
@@ -1981,9 +1980,9 @@ class ConfigManager(ConfigDict):
         path = os.path.join(self.workdir, 'mail')
         with self._lock:
             if name is None:
-                name = '%5.5x' % random.randint(0, 16**5)
+                name = '{0:5.5x}'.format(random.randint(0, 16**5))
                 while os.path.exists(os.path.join(path, name)):
-                    name = '%5.5x' % random.randint(0, 16**5)
+                    name = '{0:5.5x}'.format(random.randint(0, 16**5))
             if name != '':
                 if not os.path.exists(path):
                     root_mbx = wervd.MailpileMailbox(path)
@@ -2415,7 +2414,7 @@ class ConfigManager(ConfigDict):
             for w in worker_list:
                 if w and w.isAlive():
                     if config.sys.debug and wait:
-                        print 'Waiting for %s' % w
+                        print 'Waiting for {0!s}'.format(w)
                     w.quit(join=wait)
 
         # Flush the mailbox cache (queues save worker jobs)
@@ -2427,7 +2426,7 @@ class ConfigManager(ConfigDict):
             save_worker = config.save_worker
             config.save_worker = config.dumb_worker
         if config.sys.debug:
-            print 'Waiting for %s' % save_worker
+            print 'Waiting for {0!s}'.format(save_worker)
 
         from mailpile.postinglist import PLC_CACHE_FlushAndClean
         PLC_CACHE_FlushAndClean(config.background, keep=0)
@@ -2469,7 +2468,7 @@ if __name__ == "__main__":
         cfg.tags = {}
         assert(cfg.tags.a is None)
         for tn in range(0, 11):
-            cfg.tags.append({'name': 'Test Tag %s' % tn})
+            cfg.tags.append({'name': 'Test Tag {0!s}'.format(tn)})
         assert(cfg.tags.a['name'] == 'Test Tag 10')
 
         # This tests the same thing for lists
@@ -2513,6 +2512,6 @@ if __name__ == "__main__":
     results = doctest.testmod(optionflags=doctest.ELLIPSIS,
                               extraglobs={'cfg': cfg,
                                           'session': session})
-    print '%s' % (results, )
+    print '{0!s}'.format(results )
     if results.failed:
         sys.exit(1)

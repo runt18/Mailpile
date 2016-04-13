@@ -1,13 +1,13 @@
 APPVER = "1.0.0rc0"
 ABOUT = """\
 Mailpile.py              a tool             Copyright 2013-2016, Mailpile ehf
- v%8.0008s         for searching and               <https://www.mailpile.is/>
+ v{0:8.0008!s}         for searching and               <https://www.mailpile.is/>
                organizing piles of e-mail
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of either the GNU Affero General Public License as published by the
 Free Software Foundation. See the file COPYING.md for details.
-""" % APPVER
+""".format(APPVER)
 #############################################################################
 import os
 import sys
@@ -201,7 +201,7 @@ if __name__ == "__main__":
     import mailpile.defaults
     from mailpile.config import ConfigDict
 
-    print '%s' % (ConfigDict(_name='mailpile',
+    print '{0!s}'.format(ConfigDict(_name='mailpile',
                              _comment='Base configuration',
                              _rules=mailpile.defaults.CONFIG_RULES
-                             ).as_config_bytes(), )
+                             ).as_config_bytes() )

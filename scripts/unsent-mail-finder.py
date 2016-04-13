@@ -26,8 +26,8 @@ for line in sys.stdin.readlines():
         elif msg.startswith('Connecting'):
             sendits[eid][5]['OK'] = True
   except ValueError:
-    print 'Unparsable: %s' % line
+    print 'Unparsable: {0!s}'.format(line)
 
 for eid, data in sendits.iteritems():
     if 'OK' not in data[5]:
-        print 'On %s, failed to send %s' % (data[0], data[5]['mid'])
+        print 'On {0!s}, failed to send {1!s}'.format(data[0], data[5]['mid'])

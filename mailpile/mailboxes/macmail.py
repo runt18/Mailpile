@@ -57,7 +57,7 @@ class MacMaildir(mailbox.Mailbox):
             raise mailbox.FormatError(self._path)
 
         # And finally, there's a Data folder (with .emlx files  in it)
-        self._mailroot = "%s/%s/Data/" % (self._path, self._id)
+        self._mailroot = "{0!s}/{1!s}/Data/".format(self._path, self._id)
         if not os.path.isdir(self._mailroot):
             raise mailbox.FormatError(self._path)
 
@@ -128,7 +128,7 @@ class MacMaildir(mailbox.Mailbox):
         try:
             return self._toc[key]
         except KeyError:
-            raise KeyError("No message with key %s" % key)
+            raise KeyError("No message with key {0!s}".format(key))
 
     def get_message(self, key):
         f = open(os.path.join(self._mailroot, self._lookup(key)), 'r')
@@ -148,7 +148,7 @@ class MailpileMailbox(UnorderedPicklable(MacMaildir)):
         if (os.path.isdir(fn)
                 and os.path.exists(os.path.join(fn, 'Info.plist'))):
             return (fn, )
-        raise ValueError('Not a Mac Mail.app Maildir: %s' % fn)
+        raise ValueError('Not a Mac Mail.app Maildir: {0!s}'.format(fn))
 
 
 mailpile.mailboxes.register(50, MailpileMailbox)

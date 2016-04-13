@@ -13,9 +13,9 @@ def checkSearch(query, expected_count=1):
                 assert_equal(results.result['stats']['count'], expected_count)
                 assert_less(float(results.as_dict()["elapsed"]), 0.2)
             except:
-                print 'BAD RESULT:\n%s' % results.as_text()
+                print 'BAD RESULT:\n{0!s}'.format(results.as_text())
                 raise
-    TestSearch.description = "Searching for %s" % str(query)
+    TestSearch.description = "Searching for {0!s}".format(str(query))
     return TestSearch
 
 

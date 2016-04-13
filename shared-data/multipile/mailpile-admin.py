@@ -248,7 +248,7 @@ def app_arguments():
 
 
 def usage(ap, reason, code=3):
-    print 'error: %s' % reason
+    print 'error: {0!s}'.format(reason)
     ap.print_usage()
     sys.exit(code)
 
@@ -264,7 +264,7 @@ def parse_config(app_args,
             config.read([conf_file])
             app_args.set_defaults(**dict(config.items(section)))
         elif conf_parsed and conf_parsed.config:
-            usage(app_args, 'Config file not found: %s' % conf_file)
+            usage(app_args, 'Config file not found: {0!s}'.format(conf_file))
 
 
 def parse_arguments_and_config(app_args,
@@ -308,7 +308,7 @@ def _parse_netstat():
 def _get_random_port():
     ns = _parse_netstat()
     for tries in range(0, 100):
-       port = '%s' % random.randint(34110, 64110)
+       port = '{0!s}'.format(random.randint(34110, 64110))
        cport = ':' + port
        for lhp, rhp, pid, proc in ns:
            if lhp.endswith(cport):
@@ -401,7 +401,7 @@ def get_user_settings(args, user=None, mailpiles=None):
     if mailpiles and not port:
         ports = [int(m[2]) for m in mailpiles.values() if m[0] == user]
         if ports:
-            port = '%s' % min(ports)
+            port = '{0!s}'.format(min(ports))
     if not port:
         port = _get_random_port()
 
@@ -410,7 +410,7 @@ def get_user_settings(args, user=None, mailpiles=None):
         'mailpile': settings['mailpile'],
         'host': '127.0.0.1',
         'port': port,
-        'path': ('%s/%s/' % (args.webroot, user)).replace('//', '/'),
+        'path': ('{0!s}/{1!s}/'.format(args.webroot, user)).replace('//', '/'),
         'pidfile': pidfile,
         'idlequit': args.idlequit,
         'pid': os.path.exists(pidfile) and open(pidfile, 'r').read().strip()}
@@ -457,10 +457,10 @@ def parse_htaccess(args, os_settings, mailpiles=None):
                 m = re.match(parse, line)
                 if m:
                     host, port = m.group(2), m.group(3)
-                    mailpiles['%s:%s' % (host, port)] = [
+                    mailpiles['{0!s}:{1!s}'.format(host, port)] = [
                         m.group(1), host, port, True, None, None]
     except (OSError, IOError, KeyError), err:
-        print 'WARNING: %s' % err
+        print 'WARNING: {0!s}'.format(err)
     return mailpiles
 
 
@@ -500,10 +500,10 @@ def parse_rewritemap(args, os_settings, mailpiles=None):
                     user = m.group('user')
                     host = m.group('host')
                     port = m.group('port')
-                    mailpiles['%s:%s' % (host, port)] = [
+                    mailpiles['{0!s}:{1!s}'.format(host, port)] = [
                         user, host, port, True, None, None]
     except (OSError, IOError, KeyError), err:
-        print 'WARNING: %s' % err
+        print 'WARNING: {0!s}'.format(err)
     return mailpiles
 
 
@@ -556,10 +556,10 @@ def save_cgi(os_settings):
 def run_script(args, settings, script):
     for line in script:
         line = line % _escaped(settings)
-        print '==> %s' % line
+        print '==> {0!s}'.format(line)
         rv = os.system(line)
         if 0 != rv:
-            print '==[ FAILED! Exit code: %s ]==' % rv
+            print '==[ FAILED! Exit code: {0!s} ]=='.format(rv)
             return
     print '===[ SUCCESS! ]==='
 
@@ -585,10 +585,10 @@ def list_mailpiles(args):
         user_counts[user] = user_counts.get(user, 0) + 1
         status = []
         if in_usermap:
-            url = 'http://%s%s/%s/' % (socket.gethostname(),
+            url = 'http://{0!s}{1!s}/{2!s}/'.format(socket.gethostname(),
                                       os_settings['webroot'], user)
         else:
-            url = 'http://%s:%s/' % (host, port)
+            url = 'http://{0!s}:{1!s}/'.format(host, port)
         print fmt % (
             user, pid or '', rss or '',
             'apache' if in_usermap else 'direct', port, url)
@@ -628,10 +628,10 @@ def run_as_user(user, password, command):
 
 def run_user_command_or_script(args, user_settings, command_args, script):
     if args.user:
-        command = '"%s" %s' % (
+        command = '"{0!s}" {1!s}'.format(
             _escape(os.path.realpath(sys.argv[0])), command_args)
         if args.password:
-            print '%s%s' % run_as_user(args.user, args.password, command)
+            print '{0!s}{1!s}'.format(*run_as_user(args.user, args.password, command))
             return
         script = ['sudo -u "%(user)s" -- ' + command]
 
@@ -645,13 +645,13 @@ def start_mailpile(app_args, args):
     assert(re.match('^[0-9]+$', user_settings['port']) is not None)
     assert(re.match('^[a-z0-9\.]+$', user_settings['host']) is not None)
     if args.user:
-        command = '%s "%s" --start --port="%s" --host="%s"' % (
+        command = '{0!s} "{1!s}" --start --port="{2!s}" --host="{3!s}"'.format(
             _escape(os_settings['interpreter']),
             _escape(os_settings['mailpile-admin']),
             _escape(user_settings['port']),
             _escape(user_settings['host']))
         if args.password:
-            print '%s%s' % run_as_user(args.user, args.password, command)
+            print '{0!s}{1!s}'.format(*run_as_user(args.user, args.password, command))
             script = None
         else:
             script = ['sudo -u "%(user)s" -- ' + command]
@@ -662,7 +662,7 @@ def start_mailpile(app_args, args):
         run_script(args, user_settings, script)
 
     if args.user:
-        hostport = '%s:%s' % (user_settings['host'], user_settings['port'])
+        hostport = '{0!s}:{1!s}'.format(user_settings['host'], user_settings['port'])
         mailpiles[hostport] = (user_settings['user'],
                                user_settings['host'],
                                user_settings['port'],
@@ -742,7 +742,7 @@ def handle_cgi_post():
         settings = get_os_settings(parsed_args)
 
         # Send headers now, so output doesn't confuse Apache
-        print 'Location: %s/%s/' % (settings['webroot'], username)
+        print 'Location: {0!s}/{1!s}/'.format(settings['webroot'], username)
         print 'Expires: 0'
         print
 
@@ -753,7 +753,7 @@ def handle_cgi_post():
     except:
         parsed_args = app_args.parse_args(['--start'])
         settings = get_os_settings(parsed_args)
-        print 'Location: %s/?error=yes' % settings['webroot']
+        print 'Location: {0!s}/?error=yes'.format(settings['webroot'])
         print 'Expires: 0'
         print
 

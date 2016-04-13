@@ -115,7 +115,7 @@ class Nicknym:
         addr = address.split("@")
         addr.reverse()
         domain = addr[0]
-        return "https://nicknym.%s:6425/" % domain
+        return "https://nicknym.{0!s}:6425/".format(domain)
 
     def _audit_key(self, address, keytype, server):
         """

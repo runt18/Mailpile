@@ -35,7 +35,7 @@ class GnuPGImporter(VCardImporter):
     UPDATE_INDEX = True
 
     def get_guid(self, vcard):
-        return '%s/%s' % (self.config.guid, vcard.get('x-gpg-mrgid').value)
+        return '{0!s}/{1!s}'.format(self.config.guid, vcard.get('x-gpg-mrgid').value)
 
     def import_vcards(self, session, vcard_store, *args, **kwargs):
         kwargs['vcards'] = vcard_store
@@ -62,7 +62,7 @@ class GnuPGImporter(VCardImporter):
         if vcards:
             deleted = set()
             deleted_names = {}
-            search = ';%s/' % self.config.guid
+            search = ';{0!s}/'.format(self.config.guid)
             for cardid, vcard in (vcards or {}).iteritems():
                 for vcl in vcard.get_all('clientpidmap'):
                     if search in vcl.value:

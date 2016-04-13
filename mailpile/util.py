@@ -141,9 +141,9 @@ UNI_BOX_FLIP = dict(UNI_BOX_FLIPS + [(b, a) for a, b in UNI_BOX_FLIPS])
 
 def WhereAmI(start=1):
     stack = inspect.stack()
-    return '%s' % '->'.join(
-        ['%s:%s' % ('/'.join(stack[i][1].split('/')[-2:]), stack[i][2])
-         for i in reversed(range(start, len(stack)-1))])
+    return '{0!s}'.format('->'.join(
+        ['{0!s}:{1!s}'.format('/'.join(stack[i][1].split('/')[-2:]), stack[i][2])
+         for i in reversed(range(start, len(stack)-1))]))
 
 
 def _TracedLock(what, *a, **kw):
@@ -152,13 +152,13 @@ def _TracedLock(what, *a, **kw):
     class Wrapper:
         def acquire(self, *args, **kwargs):
             if self.locked():
-                print '==!== Waiting for %s at %s' % (str(lock), WhereAmI(2))
+                print '==!== Waiting for {0!s} at {1!s}'.format(str(lock), WhereAmI(2))
             return lock.acquire(*args, **kwargs)
         def release(self, *args, **kwargs):
             return lock.release(*args, **kwargs)
         def __enter__(self, *args, **kwargs):
             if self.locked():
-                print '==!== Waiting for %s at %s' % (str(lock), WhereAmI(2))
+                print '==!== Waiting for {0!s} at {1!s}'.format(str(lock), WhereAmI(2))
             return lock.__enter__(*args, **kwargs)
         def __exit__(self, *args, **kwargs):
             return lock.__exit__(*args, **kwargs)
@@ -217,7 +217,7 @@ class AccessError(Exception):
 class UrlRedirectException(Exception):
     """An exception indicating we need to redirecting to another URL."""
     def __init__(self, url):
-        Exception.__init__(self, 'Should redirect to: %s' % url)
+        Exception.__init__(self, 'Should redirect to: {0!s}'.format(url))
         self.url = url
 
 
@@ -464,7 +464,7 @@ def randomish_uid():
         global RID_COUNTER
         RID_COUNTER += 1
         RID_COUNTER %= 0x1000
-        return '%3.3x%7.7x%x' % (random.randint(0, 0xfff),
+        return '{0:3.3x}{1:7.7x}{2:x}'.format(random.randint(0, 0xfff),
                                  time.time() // 16,
                                  RID_COUNTER)
 
@@ -479,8 +479,8 @@ def okay_random(length, *seeds):
     while len(secret) < length:
         # Generate unpredictable bytes from the base64 alphabet
         secret += sha512b64(os.urandom(128 + length * 2),
-                            '%s' % time.time(),
-                            '%x' % random.randint(0, 0xffffffff),
+                            '{0!s}'.format(time.time()),
+                            '{0:x}'.format(random.randint(0, 0xffffffff)),
                             *seeds)
         # Strip confusing characters and truncate
         secret = CleanText(secret, banned=CleanText.NONALNUM + 'O01l\n \t'
@@ -502,7 +502,7 @@ def split_secret(secret, recipients, pad_to=24):
         for j in range(0, recipients-1):
             c ^= parts[j][i]
         last.append(c & 0xff)
-    return [':'.join(['%2.2x' % x for x in p]) for p in parts]
+    return [':'.join(['{0:2.2x}'.format(x) for x in p]) for p in parts]
 
 
 def merge_secret(parts):
@@ -650,7 +650,7 @@ def friendly_number(number, base=1000, decimals=0, suffix='',
         number /= base
         count += 1
     if decimals:
-        fmt = '%%.%df%%s%%s' % decimals
+        fmt = '%.{0:d}f%s%s'.format(decimals)
     else:
         number = round(number)
         fmt = '%d%s%s'
@@ -719,13 +719,13 @@ def backup_file(filename, backups=5, min_age_delta=0):
             return
 
         for ver in reversed(range(1, backups)):
-            bf = '%s.%d' % (filename, ver)
+            bf = '{0!s}.{1:d}'.format(filename, ver)
             if os.path.exists(bf):
-                nbf = '%s.%d' % (filename, ver+1)
+                nbf = '{0!s}.{1:d}'.format(filename, ver+1)
                 if os.path.exists(nbf):
                     os.remove(nbf)
                 os.rename(bf, nbf)
-        os.rename(filename, '%s.1' % filename)
+        os.rename(filename, '{0!s}.1'.format(filename))
 
 
 def json_helper(obj):
@@ -916,7 +916,7 @@ def HideBinary(text):
         text.decode('utf-8')
         return text
     except UnicodeDecodeError:
-        return '[BINARY DATA, %d BYTES]' % len(text)
+        return '[BINARY DATA, {0:d} BYTES]'.format(len(text))
 
 
 class TimedOut(IOError):
@@ -934,7 +934,7 @@ class RunTimedThread(threading.Thread):
         self.start()
         self.join(timeout=timeout)
         if self.isAlive() or QUITTING:
-            raise TimedOut('Timed out: %s' % self.name)
+            raise TimedOut('Timed out: {0!s}'.format(self.name))
 
 
 def RunTimed(timeout, func, *args, **kwargs):
@@ -961,20 +961,20 @@ class DebugFileWrapper(object):
         if name in ('fd', 'dbg', 'write', 'flush', 'close'):
             return object.__getattribute__(self, name)
         else:
-            self.dbg.write('==(%d.%s)\n' % (self.fd.fileno(), name))
+            self.dbg.write('==({0:d}.{1!s})\n'.format(self.fd.fileno(), name))
             return object.__getattribute__(self.fd, name)
 
     def write(self, data, *args, **kwargs):
-        self.dbg.write('<=(%d.write)= %s\n' % (self.fd.fileno(),
+        self.dbg.write('<=({0:d}.write)= {1!s}\n'.format(self.fd.fileno(),
                                                HideBinary(data).rstrip()))
         return self.fd.write(data, *args, **kwargs)
 
     def flush(self, *args, **kwargs):
-        self.dbg.write('==(%d.flush)\n' % self.fd.fileno())
+        self.dbg.write('==({0:d}.flush)\n'.format(self.fd.fileno()))
         return self.fd.flush(*args, **kwargs)
 
     def close(self, *args, **kwargs):
-        self.dbg.write('==(%d.close)\n' % self.fd.fileno())
+        self.dbg.write('==({0:d}.close)\n'.format(self.fd.fileno()))
         return self.fd.close(*args, **kwargs)
 
 
@@ -997,6 +997,6 @@ if __name__ == "__main__":
     import doctest
     import sys
     result = doctest.testmod()
-    print '%s' % (result, )
+    print '{0!s}'.format(result )
     if result.failed:
         sys.exit(1)

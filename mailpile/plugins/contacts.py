@@ -56,27 +56,25 @@ class VCardCommand(Command):
                         key = line.name
                         data = re.sub(b64re, _('(BASE64 ENCODED DATA)'),
                                       unicode(line[key]))
-                        attrs = ', '.join([('%s=%s' % (k, v))
+                        attrs = ', '.join([('{0!s}={1!s}'.format(k, v))
                                            for k, v in line.attrs
                                            if k not in ('pid',)])
                         if attrs:
-                            attrs = ' (%s)' % attrs
-                        lines.append('%3.3s %-5.5s %s: %s%s'
-                                     % (line.line_id,
+                            attrs = ' ({0!s})'.format(attrs)
+                        lines.append('{0:3.3!s} {1:<5.5!s} {2!s}: {3!s}{4!s}'.format(line.line_id,
                                         line.get('pid', ''),
                                         key, data, attrs))
                     lines.append('')
                 else:
                     emails = [k['email'] for k in card['email']]
                     photos = [k['photo'] for k in card.get('photo', [])]
-                    lines.append('%s %-32.32s %s'
-                                 % (photos and ':)' or '  ',
-                                    card['fn'] + (' (%s)' % card['note']
+                    lines.append('{0!s} {1:<32.32!s} {2!s}'.format(photos and ':)' or '  ',
+                                    card['fn'] + (' ({0!s})'.format(card['note'])
                                                   if card.get('note') else ''),
                                     ', '.join(emails)))
                     for key in [k['key'].split(',')[-1]
                                 for k in card.get('key', [])]:
-                        lines.append('   %-32.32s key:%s' % ('', key))
+                        lines.append('   {0:<32.32!s} key:{1!s}'.format('', key))
             return '\n'.join(lines)
 
     def _make_new_vcard(self, handle, name, note, kind):
@@ -147,7 +145,7 @@ class VCard(VCardCommand):
             if vcard:
                 vcards.append(vcard)
             else:
-                session.ui.warning('No such %s: %s' % (self.VCARD, email))
+                session.ui.warning('No such {0!s}: {1!s}'.format(self.VCARD, email))
         return self._success(_('Found %d results') % len(vcards),
                              result=self._vcard_list(vcards, simplify=True))
 
@@ -240,7 +238,7 @@ class AddVCard(VCardCommand):
             elif self.data.get('mid'):
                 mids = self.data.get('mid')
                 triplets = self._add_from_messages(
-                    ['=%s' % mid.replace('=', '') for mid in mids])
+                    ['={0!s}'.format(mid.replace('=', '')) for mid in mids])
         else:
             if args and args[0] == 'all':
                 recipients = args.pop(0) and True
@@ -257,7 +255,7 @@ class AddVCard(VCardCommand):
                 vcard = config.vcards.get(handle.lower())
                 if vcard:
                     if not quietly:
-                        session.ui.warning('Already exists: %s' % handle)
+                        session.ui.warning('Already exists: {0!s}'.format(handle))
                     if kind != 'profile' and vcard.kind != 'internal':
                         continue
 
@@ -351,16 +349,16 @@ class VCardAddLines(VCardCommand):
                 for n in ('name', 'value', 'replace', 'replace_all'))
             if not name or not value or ':' in name or '=' in name:
                 raise ValueError('Must send a line name and line data')
-            value = '%s:%s' % (name, value)
+            value = '{0!s}:{1!s}'.format(name, value)
             if replace:
-                value = '%d=%s' % (replace, value)
+                value = '{0:d}={1!s}'.format(replace, value)
             elif truthy(replace_all, default=self.DEFAULT_REPLACE_ALL):
                 value = '=' + value
             lines = [value]
 
         vcard = self._get_vcard(handle)
         if not vcard:
-            return self._error('%s not found: %s' % (self.VCARD, handle))
+            return self._error('{0!s} not found: {1!s}'.format(self.VCARD, handle))
         config.vcards.deindex_vcard(vcard)
         client = self.data.get('client', [vcard.USER_CLIENT])[0]
         try:
@@ -435,7 +433,7 @@ class VCardRemoveLines(VCardCommand):
         handle, line_ids = self.args[0], self.args[1:]
         vcard = config.vcards.get_vcard(handle)
         if not vcard:
-            return self._error('%s not found: %s' % (self.VCARD, handle))
+            return self._error('{0!s} not found: {1!s}'.format(self.VCARD, handle))
         config.vcards.deindex_vcard(vcard)
         removed = 0
         try:
@@ -549,7 +547,7 @@ class Contact(ContactVCard(VCard)):
 
         for email in contact["contact"]["email"]:
             s = Action(self.session, "search",
-                       ["in:Sent", "to:%s" % (email["email"])]).as_dict()
+                       ["in:Sent", "to:{0!s}".format((email["email"]))]).as_dict()
             contact["sent_messages"] += s["result"]["stats"]["total"]
             for mid in s["result"]["thread_ids"]:
                 msg = s["result"]["data"]["metadata"][mid]
@@ -558,7 +556,7 @@ class Contact(ContactVCard(VCard)):
                     contact["last_contact_to_msg_url"] = msg["urls"]["thread"]
 
             s = Action(self.session, "search",
-                       ["from:%s" % (email["email"])]).as_dict()
+                       ["from:{0!s}".format((email["email"]))]).as_dict()
             contact["received_messages"] += s["result"]["stats"]["total"]
             for mid in s["result"]["thread_ids"]:
                 msg = s["result"]["data"]["metadata"][mid]
@@ -865,9 +863,9 @@ def ProfileVCard(parent):
             user = os.getenv('USER')
             if user and not path:
                 if os.path.exists('/var/spool/mail'):
-                    path = os.path.normpath('/var/spool/mail/%s' % user)
+                    path = os.path.normpath('/var/spool/mail/{0!s}'.format(user))
                 if os.path.exists('/var/mail'):
-                    path = os.path.normpath('/var/mail/%s' % user)
+                    path = os.path.normpath('/var/mail/{0!s}'.format(user))
             return path
 
         def _configure_mail_sources(self, vcard):
@@ -875,7 +873,7 @@ def ProfileVCard(parent):
             sources = [r[7:].rsplit('-', 1)[0] for r in self.data.keys()
                        if r.startswith('source-') and r.endswith('-protocol')]
             for src_id in sources:
-                prefix = 'source-%s-' % src_id
+                prefix = 'source-{0!s}-'.format(src_id)
                 protocol = self.data.get(prefix + 'protocol', ['none'])[0]
                 def configure_source(source):
                     source.host = ''
@@ -964,7 +962,7 @@ def ProfileVCard(parent):
                         source.protocol = 'imap_tls'
                     username = source.username
                     if '@' not in username:
-                        username += '@%s' % source.host
+                        username += '@{0!s}'.format(source.host)
                     source.name = username
 
                     # We need to communicate with the source below,
@@ -1131,7 +1129,7 @@ class AddProfile(ProfileVCard(AddVCard)):
                                  [vcard and vcard.route or None])[0]
         if route_id:
             if route_id not in self.session.config.routes:
-                raise ValueError('Not a valid route ID: %s' % route_id)
+                raise ValueError('Not a valid route ID: {0!s}'.format(route_id))
         elif self.data.get('route-protocol', ['none'])[0] != 'none':
             route_id = self.session.config.routes.append({})
 
@@ -1154,14 +1152,14 @@ class AddProfile(ProfileVCard(AddVCard)):
                 tags = self.session.config.tags
                 vcard.tag = tags.append({
                     'name': vcard.email,
-                    'slug': '%8.8x' % time.time(),
+                    'slug': '{0:8.8x}'.format(time.time()),
                     'type': 'profile',
                     'icon': 'icon-user',
                     'flag_msg_only': True,
                     'label': False,
                     'display': 'invisible'
                 })
-                tags[vcard.tag].slug = 'account-%d' % len(tags)
+                tags[vcard.tag].slug = 'account-{0:d}'.format(len(tags))
 
         route_id = state.get('route_id')
         if route_id:
@@ -1217,7 +1215,7 @@ class EditProfile(AddProfile):
             })
         pvars['sources'] = vcard.sources()
         for sid in pvars['sources']:
-            prefix = 'source-%s-' % sid
+            prefix = 'source-{0!s}-'.format(sid)
             source = self.session.config.sources.get(sid)   
             disco = source.discovery
             info = {}
@@ -1292,7 +1290,7 @@ class ChooseFromAddress(Command):
 
         messages = self._choose_messages(
             [m for m in self.args if '@' not in m] +
-            ['=%s' % mid for mid in self.data.get('mid', [])]
+            ['={0!s}'.format(mid) for mid in self.data.get('mid', [])]
         )
         for msg_idx_pos in messages:
             try:

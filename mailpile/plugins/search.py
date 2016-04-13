@@ -109,7 +109,7 @@ class Search(Command):
                 try:
                     raw_tag = session.config.get_tag(t.split(':')[1])
                     if raw_tag and raw_tag.hasattr(slug):
-                        t = 'in:%s' % raw_tag.slug
+                        t = 'in:{0!s}'.format(raw_tag.slug)
                 except (IndexError, KeyError, TypeError):
                     pass
             return p+t
@@ -132,12 +132,12 @@ class Search(Command):
         d_start = int(self.data.get('start', [0])[0])
         d_end = int(self.data.get('end', [0])[0])
         if d_start and d_end:
-            args[:0] = ['@%s' % d_start]
+            args[:0] = ['@{0!s}'.format(d_start)]
             num = d_end - d_start + 1
         elif d_start:
-            args[:0] = ['@%s' % d_start]
+            args[:0] = ['@{0!s}'.format(d_start)]
         elif d_end:
-            args[:0] = ['@%s' % (d_end - num + 1)]
+            args[:0] = ['@{0!s}'.format((d_end - num + 1))]
 
         start = 0
         self._default_position = True
@@ -257,11 +257,11 @@ class Search(Command):
             return unicode(term)
         reqs = set(['!config'] +
                    [fix_term(t) for t in self.session.searched] +
-                   [u'%s:msg' % i for i in msgs])
+                   [u'{0!s}:msg'.format(i) for i in msgs])
         if self.session.displayed:
-            reqs |= set(u'%s:thread' % int(tmid, 36) for tmid in
+            reqs |= set(u'{0!s}:thread'.format(int(tmid, 36)) for tmid in
                         self.session.displayed.get('thread_ids', []))
-            reqs |= set(u'%s:msg' % int(tmid, 36) for tmid in
+            reqs |= set(u'{0!s}:msg'.format(int(tmid, 36)) for tmid in
                         self.session.displayed.get('message_ids', []))
         return reqs
 
@@ -359,7 +359,7 @@ class View(Search):
             return self._decode()
 
         def as_html(self, *args, **kwargs):
-            return '<pre>%s</pre>' % escape_html(self._decode())
+            return '<pre>{0!s}</pre>'.format(escape_html(self._decode()))
 
     def _side_effects(self, emails):
         # A compatibility stub only
@@ -372,7 +372,7 @@ class View(Search):
         session, config, idx = self.session, self.session.config, self._idx()
         results = []
         args = list(self.args)
-        args.extend(['=%s' % mid.replace('=', '')
+        args.extend(['={0!s}'.format(mid.replace('=', ''))
                      for mid in self.data.get('mid', [])])
         if args and args[0].lower() == 'raw':
             raw = args.pop(0)
@@ -483,7 +483,7 @@ class Extract(Command):
         for e in emails:
             if cid[0] == '*':
                 tree = e.get_message_tree(want=['attachments'])
-                cids = [('#%s' % a['count']) for a in tree['attachments']
+                cids = [('#{0!s}'.format(a['count'])) for a in tree['attachments']
                         if a['filename'].lower().endswith(cid[1:].lower())]
             else:
                 cids = [cid]
@@ -520,7 +520,7 @@ def mailbox_search(config, idx, term, hits):
     rt = []
     for mbox_id in mailboxes:
         mbox_id = FormatMbxId(mbox_id)
-        rt.extend(hits('%s:mailbox' % mbox_id))
+        rt.extend(hits('{0!s}:mailbox'.format(mbox_id)))
 
     return rt
 

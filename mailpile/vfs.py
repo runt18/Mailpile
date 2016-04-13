@@ -239,7 +239,7 @@ class MailpileVFS(MailpileVfsBase):
         for prio, handler in VFS_HANDLERS:
             if handler.Handles(path):
                 return handler
-        raise IOError('Invalid path: %s' % path)
+        raise IOError('Invalid path: {0!s}'.format(path))
 
     def glob_(self, path, *args, **kwargs):
         return self._delegate(path).glob_(path, *args, **kwargs)
@@ -357,8 +357,8 @@ class MailpileVfsRoot(MailpileVfsBase):
                 for profile in os.listdir(tbird_home):
                     profpath = os.path.join(tbird_home, profile)
                     if os.path.exists(os.path.join(profpath, 'Mail')):
-                        eid = 'tbird-%s' % profile
-                        name = 'Thunderbird %s' % profile.split('.', 1)[-1]
+                        eid = 'tbird-{0!s}'.format(profile)
+                        name = 'Thunderbird {0!s}'.format(profile.split('.', 1)[-1])
                         self.entries[eid] = (FilePath(profpath), name)
 
     def _entries(self):
@@ -366,7 +366,7 @@ class MailpileVfsRoot(MailpileVfsBase):
         for msid, msobj in self.config.mail_sources.iteritems():
             if not msobj.my_config.enabled:
                 continue
-            e['msrc.%s' % msid] = (FilePath('/src:%s' % msid), msobj.name,
+            e['msrc.{0!s}'.format(msid)] = (FilePath('/src:{0!s}'.format(msid)), msobj.name,
                                    'MailSource')
         return e
 

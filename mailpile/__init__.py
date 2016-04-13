@@ -49,7 +49,7 @@ class Mailpile(object):
                 return mailpile.commands.Action(self._session, cmd, '',
                                                 data=kwargs)
 
-        fnc.__doc__ = '%s(%s)  # %s' % (cmd, argspec or '', cls.__doc__)
+        fnc.__doc__ = '{0!s}({1!s})  # {2!s}'.format(cmd, argspec or '', cls.__doc__)
         return cmd.replace('/', '_'), fnc
 
     def Interact(self):

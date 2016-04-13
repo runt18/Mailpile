@@ -203,7 +203,7 @@ class Generator:
 
     def _write_headers(self, msg):
         for h, v in msg.items():
-            print >> self._fp, '%s:' % h,
+            print >> self._fp, '{0!s}:'.format(h),
             if self._maxheaderlen == 0:
                 # Explicit no-wrapping
                 print >> self._fp, v + self._NL,
@@ -240,7 +240,7 @@ class Generator:
         if payload is None:
             return
         if not isinstance(payload, basestring):
-            raise TypeError('string payload expected: %s' % type(payload))
+            raise TypeError('string payload expected: {0!s}'.format(type(payload)))
         if self._mangle_from_:
             payload = fcre.sub('>From ', payload)
         self._fp.write(payload)
@@ -422,7 +422,7 @@ class DecodedGenerator(Generator):
 
 # Helper
 _width = len(repr(sys.maxint-1))
-_fmt = '%%0%dd' % _width
+_fmt = '%0{0:d}d'.format(_width)
 
 
 def _make_boundary(text=None):

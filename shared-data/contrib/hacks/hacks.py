@@ -102,7 +102,7 @@ class ViewMetadata(Hacks):
         ptags = [cfg.get_tag(t) or t
                  for t in info[idx.MSG_TAGS].split(',') if t]
         ptags = [t.name for t in ptags if hasattr(t, 'name')]
-        pptrs = ['%s -> %s' % (cfg.sys.mailbox.get(p[:MBX_ID_LEN],
+        pptrs = ['{0!s} -> {1!s}'.format(cfg.sys.mailbox.get(p[:MBX_ID_LEN],
                                                    p[:MBX_ID_LEN] + '?'),
                                p[MBX_ID_LEN:])
                  for p in info[idx.MSG_PTRS].split(',') if p]
@@ -187,7 +187,7 @@ class Http(Hacks):
         method, url = args[0:2]
 
         if not url.startswith('http'):
-            url = 'http://%s:%s%s' % (self.session.config.sys.http_host,
+            url = 'http://{0!s}:{1!s}{2!s}'.format(self.session.config.sys.http_host,
                                       self.session.config.sys.http_port,
                                       ('/' + url).replace('//', '/'))
 
@@ -225,7 +225,7 @@ class Http(Hacks):
 
         try:
             uo = URLopener()
-            uo.addheader('Cookie', '%s=%s' % (cookie, HACKS_SESSION_ID))
+            uo.addheader('Cookie', '{0!s}={1!s}'.format(cookie, HACKS_SESSION_ID))
             with TcpConnBroker().context(need=[TcpConnBroker.OUTGOING_HTTP],
                                          oneshot=True):
                 if method == 'POST':
@@ -236,13 +236,13 @@ class Http(Hacks):
             data = open(fn, 'rb').read().strip()
             if data.startswith('{') and 'application/json' in hdrs:
                 data = json.loads(data)
-            return self._success('%s %s' % (method, url), result={
+            return self._success('{0!s} {1!s}'.format(method, url), result={
                 'headers': hdrs.splitlines(),
                 'data': data
             })
         except:
             self._ignore_exception()
-            return self._error('%s %s' % (method, url))
+            return self._error('{0!s} {1!s}'.format(method, url))
 
 
 class CheckMailbox(Hacks):
@@ -275,7 +275,7 @@ class CheckMailbox(Hacks):
             msgids = {}
             indexed = {}
             try:
-                session.ui.mark('%s: Opening mailbox' % mbx_id)
+                session.ui.mark('{0!s}: Opening mailbox'.format(mbx_id))
                 mbx = config.open_mailbox(session, mbx_id, prefer_local=True)
                 try:
                     remote = config.open_mailbox(session, mbx_id,
@@ -287,16 +287,14 @@ class CheckMailbox(Hacks):
                     counts[0] += 1
                     i, n = counts[0], counts[1] or 1  # Avoid divide by zero
                     if i > max(10, (n/25)) and 0 == i % max(1, (n//397)):
-                        session.ui.mark('%s: %s: Message %d/%d (%d%%)'
-                                        % (mbx_id, what, i, n, 100 * i / n))
+                        session.ui.mark('{0!s}: {1!s}: Message {2:d}/{3:d} ({4:d}%)'.format(mbx_id, what, i, n, 100 * i / n))
 
                 # We do the scan with the mailbox locked, just to be a bit
                 # paranoid. Not doing this was a good way to find bugs...
                 with mbx:
                     mbx.update_toc()
                     result['messages'] = len(mbx)
-                    session.ui.mark('%s: Checking %d messages'
-                                    % (mbx_id, len(mbx)))
+                    session.ui.mark('{0!s}: Checking {1:d} messages'.format(mbx_id, len(mbx)))
                     counts = [0, len(mbx)]
                     for key in list(mbx.keys()):
                         _mark_progress('Checking', counts)
@@ -304,8 +302,7 @@ class CheckMailbox(Hacks):
                             message = mbx[key]  # FIXME: only need header...
                         except KeyError:
                             traceback.print_exc()
-                            session.ui.notify('%s: Not found in mailbox: %s'
-                                              % (mbx_id, key))
+                            session.ui.notify('{0!s}: Not found in mailbox: {1!s}'.format(mbx_id, key))
                             continue
 
                         enc_msgid = idx.get_msg_id(message, 'bogus')
@@ -316,8 +313,7 @@ class CheckMailbox(Hacks):
                             seen[enc_msgid] = set([key])
                         msg_idx_pos = idx.MSGIDS.get(enc_msgid)
                         if msg_idx_pos is None:
-                            session.ui.notify('%s: Not in index: %s %s'
-                                              % (mbx_id, key, enc_msgid))
+                            session.ui.notify('{0!s}: Not in index: {1!s} {2!s}'.format(mbx_id, key, enc_msgid))
                             result['unindexed'].append((key, enc_msgid))
                         else:
                             msg_info = idx.get_msg_at_idx_pos(msg_idx_pos)
@@ -339,12 +335,11 @@ class CheckMailbox(Hacks):
                         mbx.source_map = {}
                         result['source_map'] = 0
                     except AttributeError:
-                        session.ui.warning('%s: Failed to add source_map'
-                                           % mbx_id)
+                        session.ui.warning('{0!s}: Failed to add source_map'.format(mbx_id))
 
                 if remote and 'noremote' not in flags:
                     if hasattr(mbx, 'source_map') and len(mbx.source_map) > 0:
-                        session.ui.mark('%s: Comparing with source' % mbx_id)
+                        session.ui.mark('{0!s}: Comparing with source'.format(mbx_id))
                         result['source_unknown'] = []
                         result['source_missing'] = []
                         result['source_mismatch'] = []
@@ -364,13 +359,11 @@ class CheckMailbox(Hacks):
                                 loc_msgid = msgids[key]
                                 if idx.get_msg_id(src_msg, 'x') != loc_msgid:
                                     session.ui.notify(
-                                        '%s: Source mismatch: %s %s'
-                                        % (mbx_id, source_id, key))
+                                        '{0!s}: Source mismatch: {1!s} {2!s}'.format(mbx_id, source_id, key))
                                     result['source_missing'].append(sk)
                             except (IndexError, KeyError):
                                 session.ui.notify(
-                                    '%s: Source missing: %s %s'
-                                    % (mbx_id, source_id, key))
+                                    '{0!s}: Source missing: {1!s} {2!s}'.format(mbx_id, source_id, key))
                                 result['source_missing'].append(sk)
 
                 if 'index' in flags:
@@ -381,8 +374,7 @@ class CheckMailbox(Hacks):
                 if 'clean' in flags or 'dedup' in flags:
                     if mbx.is_local or mbx.editable or 'force' in flags:
                         result['removed'] = []
-                        session.ui.mark('%s: Removing autosaved drafts'
-                                        % mbx_id)
+                        session.ui.mark('{0!s}: Removing autosaved drafts'.format(mbx_id))
                         counts = [0, len(result['duplicates'])]
                         for dups in result['duplicates'][:]:
                             _mark_progress('Clean', counts)
@@ -404,8 +396,7 @@ class CheckMailbox(Hacks):
 
                 if 'dedup' in flags:
                     if mbx.is_local or mbx.editable or 'force' in flags:
-                        session.ui.mark('%s: Removing duplicate messages'
-                                        % mbx_id)
+                        session.ui.mark('{0!s}: Removing duplicate messages'.format(mbx_id))
                         if 'removed' not in result:
                             result['removed'] = []
                         counts = [0, len(result['duplicates'])]
@@ -428,8 +419,7 @@ class CheckMailbox(Hacks):
                                            'want to modify this mailbox.')
 
                 if reindex:
-                    session.ui.mark('%s: Indexing unindexed messages'
-                                    % mbx_id)
+                    session.ui.mark('{0!s}: Indexing unindexed messages'.format(mbx_id))
                     result['indexed'] = []
                     counts = [0, len(reindex)]
                     for key, message_id in reindex:
@@ -447,8 +437,8 @@ class CheckMailbox(Hacks):
             mbx.update_toc()
 
         if errors:
-            return self._error('Checked %d mailboxes' % len(results),
+            return self._error('Checked {0:d} mailboxes'.format(len(results)),
                                info=errors, result=results)
         else:
-            return self._success('Checked %d mailboxes' % len(results),
+            return self._success('Checked {0:d} mailboxes'.format(len(results)),
                                  result=results)

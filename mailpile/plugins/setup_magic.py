@@ -220,7 +220,7 @@ class SetupMagic(Command):
                 session.config.filters.append({
                     'type': 'system',
                     'terms': search,
-                    'tags': '+%s' % tid,
+                    'tags': '+{0!s}'.format(tid),
                     'primary_tag': tid,
                     'comment': t
                 })
@@ -234,7 +234,7 @@ class SetupMagic(Command):
         for stype, statuses in (('sig', SignatureInfo.STATUSES),
                                 ('enc', EncryptionInfo.STATUSES)):
             for status in statuses:
-                tagname = 'mp_%s-%s' % (stype, status)
+                tagname = 'mp_{0!s}-{1!s}'.format(stype, status)
                 if not session.config.get_tag_id(tagname):
                     AddTag(session, arg=[tagname]).run(save=False)
                     created.append(tagname)
@@ -333,9 +333,9 @@ class SetupMagic(Command):
             #   math.log((25 + 25 + 8) ** (12 * 4), 2) == 281.183...
             #
             session.config.master_key = okay_random(12 * 4,
-                                                    '%s' % session.config,
-                                                    '%s' % self.session,
-                                                    '%s' % self.data)
+                                                    '{0!s}'.format(session.config),
+                                                    '{0!s}'.format(self.session),
+                                                    '{0!s}'.format(self.data))
             if self._idx() and self._idx().INDEX:
                 session.ui.warning(_('Unable to obfuscate search index '
                                      'without losing data. Not indexing '
@@ -372,15 +372,15 @@ class TestableWebbable(SetupMagic):
 
         nxt = Setup.Next(self.session.config, None, needed_auth=False)
         if nxt:
-            url = '/%s/' % nxt.SYNOPSIS[2]
-        elif path and path != '/%s/' % Setup.SYNOPSIS[2]:
+            url = '/{0!s}/'.format(nxt.SYNOPSIS[2])
+        elif path and path != '/{0!s}/'.format(Setup.SYNOPSIS[2]):
             # Use the same redirection logic as the Authenticator
             mailpile.auth.Authenticate.RedirectBack(path, data)
         else:
             url = '/'
 
         qs = urlencode([(k, v) for k, vl in data.iteritems() for v in vl])
-        raise UrlRedirectException(''.join([self.session.config.sys.http_path, url, '?%s' % qs if qs else '']))
+        raise UrlRedirectException(''.join([self.session.config.sys.http_path, url, '?{0!s}'.format(qs) if qs else '']))
 
     def _success(self, message, result=True, advance=False):
         if advance or truthy(self.data.get('advance', ['no'])[0], default=False):
@@ -460,7 +460,7 @@ class SetupGetEmailSettings(TestableWebbable):
         else:
             conn_needs = [ConnBroker.OUTGOING_HTTP]
         with ConnBroker.context(need=conn_needs) as context:
-            self.session.ui.mark('Getting: %s' % url)
+            self.session.ui.mark('Getting: {0!s}'.format(url))
             return urlopen(url, data=None, timeout=10).read()
 
     def _username(self, val, email):
@@ -476,7 +476,7 @@ class SetupGetEmailSettings(TestableWebbable):
         elif sockettype.lower() == 'starttls':
             servertype += '_tls'
         else:
-            print 'FIXME/SOURCE: %s/%s' % (sockettype, servertype)
+            print 'FIXME/SOURCE: {0!s}/{1!s}'.format(sockettype, servertype)
         return servertype.lower()
 
     def _route_proto(self, outsrv):
@@ -487,7 +487,7 @@ class SetupGetEmailSettings(TestableWebbable):
         elif sockettype.lower() == 'starttls':
             servertype += 'tls'
         else:
-            print 'FIXME/ROUTE: %s/%s' % (sockettype, servertype)
+            print 'FIXME/ROUTE: {0!s}/{1!s}'.format(sockettype, servertype)
         return servertype.lower()
 
     def _rank(self, entry):
@@ -647,7 +647,7 @@ class SetupGetEmailSettings(TestableWebbable):
                                (None, ('imap', 'pop3', 'smtp'))):
             try:
                 if prefix:
-                    name = '%s.%s' % (prefix, domain)
+                    name = '{0!s}.{1!s}'.format(prefix, domain)
                 else:
                     name = domain
 
@@ -656,7 +656,7 @@ class SetupGetEmailSettings(TestableWebbable):
                 else:
                     # We just try to connect to everything if anonymity
                     # was requested - otherwise we'd be leaking over DNS.
-                    ip = '%s-%s' % (prefix, protos)
+                    ip = '{0!s}-{1!s}'.format(prefix, protos)
 
                 if ip:
                     for proto in protos:
@@ -1070,7 +1070,7 @@ class SetupTestRoute(TestableWebbable):
         if '@' not in fromaddr:
             fromaddr = self.session.config.get_profile()['email']
         if not fromaddr or '@' not in fromaddr:
-            fromaddr = '%s@%s' % (route.get('username', 'test'),
+            fromaddr = '{0!s}@{1!s}'.format(route.get('username', 'test'),
                                   route.get('host', 'example.com'))
         assert(fromaddr)
 

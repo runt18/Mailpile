@@ -119,10 +119,10 @@ class Command(object):
 
         def as_text(self):
             if isinstance(self.result, bool):
-                happy = '%s: %s' % (self.result and _('OK') or _('Failed'),
+                happy = '{0!s}: {1!s}'.format(self.result and _('OK') or _('Failed'),
                                     self.message or self.doc)
                 if not self.result and self.error_info:
-                    return '%s\n%s' % (happy,
+                    return '{0!s}\n{1!s}'.format(happy,
                         json.dumps(self.error_info, indent=4,
                                    default=mailpile.util.json_helper))
                 else:
@@ -153,7 +153,7 @@ class Command(object):
                 'message': self.message,
                 'result': self.result,
                 'event_id': self.command_obj.event.event_id,
-                'elapsed': '%.3f' % self.session.ui.time_elapsed,
+                'elapsed': '{0:.3f}'.format(self.session.ui.time_elapsed),
             }
             csrf_token = self.session.ui.html_variables.get('csrf_token')
             if csrf_token:
@@ -267,7 +267,7 @@ class Command(object):
         from mailpile.urlmap import UrlMap
         args = sorted(list((sqa or self.state_as_query_args()).iteritems()))
         # The replace() stuff makes these usable as CSS class IDs
-        return ('%s-%s' % (UrlMap(self.session).ui_url(self),
+        return ('{0!s}-{1!s}'.format(UrlMap(self.session).ui_url(self),
                            md5_hex(str(args))
                            )).replace('/', '-').replace('.', '-')
 
@@ -298,7 +298,7 @@ class Command(object):
             # Security: The template request may come from the URL, so we
             #           sanitize it very aggressively before heading off
             #           to the filesystem.
-            clean_tpl = CleanText(template.replace('.%s' % ttype, ''),
+            clean_tpl = CleanText(template.replace('.{0!s}'.format(ttype), ''),
                                   banned=(CleanText.FS +
                                           CleanText.WHITESPACE))
             path_parts.append(clean_tpl.clean)
@@ -431,8 +431,8 @@ class Command(object):
         ui_message = _('%s error: %s') % (self.name, message)
         if info:
             self.error_info.update(info)
-            details = ' '.join(['%s=%s' % (k, info[k]) for k in info])
-            ui_message += ' (%s)' % details
+            details = ' '.join(['{0!s}={1!s}'.format(k, info[k]) for k in info])
+            ui_message += ' ({0!s})'.format(details)
         self.session.ui.mark(self.name)
         self.session.ui.error(ui_message)
 
@@ -445,7 +445,7 @@ class Command(object):
         self.status = 'success'
         self.message = message
 
-        ui_message = '%s: %s' % (self.name, message)
+        ui_message = '{0!s}: {1!s}'.format(self.name, message)
         self.session.ui.mark(ui_message)
 
         return self.view(result)
@@ -976,7 +976,7 @@ class SearchResults(dict):
                     cids = self._msg_addresses(
                         addresses=AddressHeaderParser(
                             unicode_data=editing_strings[key]))
-                    editing_strings['%s_aids' % key] = cids
+                    editing_strings['{0!s}_aids'.format(key)] = cids
                     for cid in cids:
                         if cid not in self['data']['addresses']:
                             self['data']['addresses'
@@ -1146,8 +1146,8 @@ class SearchResults(dict):
 
     def as_text(self):
         from mailpile.www.jinjaextensions import MailpileCommand as JE
-        clen = max(3, len('%d' % len(self.session.results)))
-        cfmt = '%%%d.%ds' % (clen, clen)
+        clen = max(3, len('{0:d}'.format(len(self.session.results))))
+        cfmt = '%{0:d}.{1:d}s'.format(clen, clen)
 
         term_width = self.session.ui.term.max_width()
         fs_width = int((22 + 53) * (term_width / 79.0))
@@ -1180,7 +1180,7 @@ class SearchResults(dict):
                     es[0] = 'S'
             es = ''.join([e for e in es if e])
             if es:
-                msg_meta = (msg_meta or '  ') + ('[%s]' % es)
+                msg_meta = (msg_meta or '  ') + ('[{0!s}]'.format(es))
             elif msg_meta:
                 msg_meta += ')'
             else:
@@ -1196,9 +1196,9 @@ class SearchResults(dict):
             if '@' in from_info and len(from_info) > 18:
                 e, d = from_info.split('@', 1)
                 if d in ('gmail.com', 'yahoo.com', 'hotmail.com'):
-                    from_info = '%s@%s..' % (e, d[0])
+                    from_info = '{0!s}@{1!s}..'.format(e, d[0])
                 else:
-                    from_info = '%s..@%s' % (e[0], d)
+                    from_info = '{0!s}..@{1!s}'.format(e[0], d)
 
             if not expand_ids:
                 def gg(pos):
@@ -1209,11 +1209,11 @@ class SearchResults(dict):
                     thread.append(m['mid'])
                 pos = thread.index(m['mid']) + 1
                 if pos > 1:
-                    from_info = '%s>%s' % (gg(pos-1), from_info)
+                    from_info = '{0!s}>{1!s}'.format(gg(pos-1), from_info)
                 else:
                     from_info = '  ' + from_info
                 if pos < len(thread):
-                    from_info = '%s>%s' % (from_info[:20], gg(len(thread)-pos))
+                    from_info = '{0!s}>{1!s}'.format(from_info[:20], gg(len(thread)-pos))
 
             subject = re.sub('^(\\[[^\\]]{6})[^\\]]{3,}\\]\\s*', '\\1..] ',
                              JE._nice_subject(m))
@@ -1236,7 +1236,7 @@ class SearchResults(dict):
                 if msg_tree['attachments']:
                     text.append('\nAttachments:')
                     for a in msg_tree['attachments']:
-                        text.append('%5.5s %s' % ('#%s' % a['count'],
+                        text.append('{0:5.5!s} {1!s}'.format('#{0!s}'.format(a['count']),
                                                   a['filename']))
                 text.append('-' * term_width)
 
@@ -1317,7 +1317,7 @@ class Rescan(Command):
             for msg_idx_pos in msg_idxs:
                 e = Email(idx, msg_idx_pos)
                 try:
-                    session.ui.mark('Re-indexing %s' % e.msg_mid())
+                    session.ui.mark('Re-indexing {0!s}'.format(e.msg_mid()))
                     idx.index_email(self.session, e)
                 except KeyboardInterrupt:
                     raise
@@ -1554,7 +1554,7 @@ class BrowseOrLaunch(Command):
 
     @classmethod
     def Browse(cls, sspec):
-        http_url = ('http://%s:%s%s/' % sspec
+        http_url = ('http://{0!s}:{1!s}{2!s}/'.format(*sspec)
                     ).replace('//0.0.0.0:', '//localhost:')
         try:
             MakePopenUnsafe()
@@ -1614,7 +1614,7 @@ class RunWWW(Command):
                                             daemons=True)
         if config.http_worker:
             sspec = config.http_worker.httpd.sspec
-            http_url = 'http://%s:%s%s/' % sspec
+            http_url = 'http://{0!s}:{1!s}{2!s}/'.format(*sspec)
             if sspec != ospec:
                 (config.sys.http_host, config.sys.http_port,
                  config.sys.http_path) = sspec
@@ -1637,7 +1637,7 @@ class WritePID(Command):
 
     def command(self):
         with vfs.open(self.args[0], 'w') as fd:
-            fd.write('%d' % os.getpid())
+            fd.write('{0:d}'.format(os.getpid()))
         return self._success(_('Wrote PID to %s') % self.args)
 
 
@@ -1652,7 +1652,7 @@ class RenderPage(Command):
 
     def template_path(self, ttype, template_id=None, **kwargs):
         if not template_id:
-            template_id = '%s/%s' % (self.SYNOPSIS[2],
+            template_id = '{0!s}/{1!s}'.format(self.SYNOPSIS[2],
                                      self.args and self.args[0] or '')
         return Command.template_path(self, ttype, template_id=template_id,
                                      **kwargs)
@@ -1678,8 +1678,7 @@ class ProgramStatus(Command):
 
             sessions = self.result.get('sessions')
             if sessions:
-                sessions = '\n'.join(sorted(['  %s/%s = %s (%ds)'
-                                             % (us['sessionid'],
+                sessions = '\n'.join(sorted(['  {0!s}/{1!s} = {2!s} ({3:d}s)'.format(us['sessionid'],
                                                 us['userdata'],
                                                 us['userinfo'],
                                                 now - us['timestamp'])
@@ -1690,14 +1689,14 @@ class ProgramStatus(Command):
             ievents = self.result.get('ievents')
             cevents = self.result.get('cevents')
             if cevents:
-                cevents = '\n'.join(['  %s' % (e.as_text(compact=True),)
+                cevents = '\n'.join(['  {0!s}'.format(e.as_text(compact=True))
                                      for e in cevents])
             else:
                 cevents = '  ' + _('Nothing Found')
 
             ievents = self.result.get('ievents')
             if ievents:
-                ievents = '\n'.join([' %s' % (e.as_text(compact=True),)
+                ievents = '\n'.join([' {0!s}'.format(e.as_text(compact=True))
                                      for e in ievents])
             else:
                 ievents = '  ' + _('Nothing Found')
@@ -1811,7 +1810,7 @@ class GpgCommand(Command):
 
     class CommandResult(Command.CommandResult):
         def as_text(self):
-            return '%s' % self.message
+            return '{0!s}'.format(self.message)
 
     def command(self, args=None):
         args = list((args is None) and self.args or args or [])
@@ -1878,7 +1877,7 @@ class ListDir(Command):
                 info = vfs.getinfo(f, self.session.config)
                 info['icon'] = ''
                 for k in info.get('flags', []):
-                    info['flag_%s' % unicode(k).lower().replace('.', '_')
+                    info['flag_{0!s}'.format(unicode(k).lower().replace('.', '_'))
                          ] = True
             except (OSError, IOError, UnicodeDecodeError):
                 info['flag_error'] = True
@@ -1991,7 +1990,7 @@ class CatFile(Command):
         for fn in files:
             with vfs.open(fn, 'r') as fd:
                 def errors(where):
-                    self.session.ui.error('Decrypt failed at %d' % where)
+                    self.session.ui.error('Decrypt failed at {0:d}'.format(where))
                 decrypt_and_parse_lines(fd, cb, self.session.config,
                                         newlines=True, decode=None,
                                         _raise=False, error_cb=errors)
@@ -2114,7 +2113,7 @@ class ConfigSet(Command):
                         cfg, v1, v2 = config.walk(path.strip(), parent=2)
                         cfg[v1] = {v2: value}
                 except TypeError:
-                    raise ValueError('Could not set variable: %s' % path)
+                    raise ValueError('Could not set variable: {0!s}'.format(path))
 
         if config.loaded_config:
             self._background_save(config=True)
@@ -2267,11 +2266,11 @@ class ConfigPrint(Command):
                                                   recurse, sanitize)
                     else:
                         if 'name' in rv[key]:
-                            rv[key] = '{ ..(%s).. }' % rv[key]['name']
+                            rv[key] = '{{ ..({0!s}).. }}'.format(rv[key]['name'])
                         elif 'description' in rv[key]:
-                            rv[key] = '{ ..(%s).. }' % rv[key]['description']
+                            rv[key] = '{{ ..({0!s}).. }}'.format(rv[key]['description'])
                         elif 'host' in rv[key]:
-                            rv[key] = '{ ..(%s).. }' % rv[key]['host']
+                            rv[key] = '{{ ..({0!s}).. }}'.format(rv[key]['host'])
                         else:
                             rv[key] = '{ ... }'
                 elif sanitize and key.lower()[:4] in ('pass', 'secr'):
@@ -2441,12 +2440,11 @@ class ConfigureMailboxes(Command):
                         has_source = True
                     configure.append((fn, einfo))
                     if not account:
-                        session.ui.warning('Already in the pile: %s'
-                                           % fn_display)
+                        session.ui.warning('Already in the pile: {0!s}'.format(fn_display))
                 elif IsMailbox(fn.raw_fp, config):
                     adding.append(fn)
                 elif recurse and vfs.exists(fn) and vfs.isdir(fn):
-                    session.ui.mark('Scanning %s for mailboxes' % fn_display)
+                    session.ui.mark('Scanning {0!s} for mailboxes'.format(fn_display))
                     try:
                         for f in [f for f in vfs.listdir(fn)
                                   if not f.raw_fp.startswith('.')]:
@@ -2586,15 +2584,15 @@ class Pipe(Command):
 
         elif '@' in target[0]:
             from mailpile.plugins.compose import Compose
-            body = 'Result as %s:\n%s' % (capture.render_mode, output)
+            body = 'Result as {0!s}:\n{1!s}'.format(capture.render_mode, output)
             if capture.render_mode != 'json' and output[0] not in ('{', '['):
-                body += '\n\nResult as JSON:\n%s' % result.as_json()
+                body += '\n\nResult as JSON:\n{0!s}'.format(result.as_json())
             composer = Compose(self.session, data={
                 'to': target,
-                'subject': ['Mailpile: %s %s' % (command, ' '.join(args))],
+                'subject': ['Mailpile: {0!s} {1!s}'.format(command, ' '.join(args))],
                 'body': [body]
             })
-            return self._success('Mailing output to %s' % ', '.join(target),
+            return self._success('Mailing output to {0!s}'.format(', '.join(target)),
                                  result=composer.run())
         else:
             try:
@@ -2607,11 +2605,10 @@ class Pipe(Command):
                 MakePopenSafe()
                 kid.wait()
             if kid.returncode != 0:
-                return self._error('Error piping to %s' % (target, ),
+                return self._error('Error piping to {0!s}'.format(target ),
                                    info={'stderr': rv[1], 'stdout': rv[0]})
 
-        return self._success('Wrote %d bytes to %s'
-                             % (len(output), ' '.join(target)))
+        return self._success('Wrote {0:d} bytes to {1!s}'.format(len(output), ' '.join(target)))
 
 
 class Quit(Command):
@@ -2739,7 +2736,7 @@ class Help(Command):
         def variables_as_text(self):
             text = []
             for group in self.result['variables']:
-                text.append('%s (%s.*)' % (group['name'], group['category']))
+                text.append('{0!s} ({1!s}.*)'.format(group['name'], group['category']))
                 for var in group['variables']:
                     sep = ('=' in var['type']) and ': ' or ' = '
                     text.append(('  %-35s %s'
@@ -2768,19 +2765,19 @@ class Help(Command):
                 if c[0] == '_':
                     c = '  '
                 else:
-                    c = '%s|' % c[0]
-                fmt = '  %%s%%-%d.%ds' % (width, width)
+                    c = '{0!s}|'.format(c[0])
+                fmt = '  %s%-{0:d}.{1:d}s'.format(width, width)
                 if explanation:
                     if len(args or '') <= arg_width:
-                        fmt += ' %%-%d.%ds %%s' % (arg_width, arg_width)
+                        fmt += ' %-{0:d}.{1:d}s %s'.format(arg_width, arg_width)
                     else:
                         pad = len(c) + width + 3 + arg_width
-                        fmt += ' %%s\n%s %%s' % (' ' * pad)
+                        fmt += ' %s\n{0!s} %s'.format((' ' * pad))
                 else:
                     explanation = ''
                     fmt += ' %s %s '
                 text.append(fmt % (c, cmd.replace('=', ''),
-                                   args and ('%s' % (args, )) or '',
+                                   args and ('{0!s}'.format(args )) or '',
                                    (explanation.splitlines() or [''])[0]))
             if self.result.get('tags'):
                 text.extend([
@@ -2820,7 +2817,7 @@ class Help(Command):
                     for scls in sorted(subs):
                         sc, scmd, surl, ssynopsis = scls.SYNOPSIS[:4]
                         order += 1
-                        cmd_list['_%s' % scmd] = (scmd, ssynopsis,
+                        cmd_list['_{0!s}'.format(scmd)] = (scmd, ssynopsis,
                                                   scls.__doc__, order)
                         width = max(len(scmd or surl), width)
                     return self._success(_('Displayed help'), result={
@@ -2840,7 +2837,7 @@ class Help(Command):
                         continue
                     c, name, url, synopsis = cls.SYNOPSIS[:4]
                     if cls.ORDER[0] == grp and '/' not in (name or ''):
-                        cmd_list[c or '_%s' % name] = (name, synopsis,
+                        cmd_list[c or '_{0!s}'.format(name)] = (name, synopsis,
                                                        cls.__doc__,
                                                        count + cls.ORDER[1])
             if config.loaded_config:
@@ -2917,7 +2914,7 @@ class HelpSplash(Help):
 
         in_browser = False
         if http_worker:
-            http_url = 'http://%s:%s%s/' % http_worker.httpd.sspec
+            http_url = 'http://{0!s}:{1!s}{2!s}/'.format(*http_worker.httpd.sspec)
             if ((sys.platform[:3] in ('dar', 'win') or os.getenv('DISPLAY'))
                     and self.session.config.prefs.open_in_browser):
                 if BrowseOrLaunch.Browse(http_worker.httpd.sspec):
@@ -2961,7 +2958,7 @@ def Action(session, opt, arg, data=None):
             if opt.lower() in (tag.name.lower(),
                                tag.slug.lower(),
                                _(tag.name).lower()):
-                a = 'in:%s%s%s' % (tag.slug, ' ' if arg else '', arg)
+                a = 'in:{0!s}{1!s}{2!s}'.format(tag.slug, ' ' if arg else '', arg)
                 return GetCommand('search')(session, opt,
                                             arg=a, data=data).run()
 

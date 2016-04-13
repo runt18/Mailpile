@@ -90,7 +90,7 @@ class MorkImporter(VCardImporter):
             return '\\r'
         if s == '\n':
             return '\\n'
-        return "\\x%02x" % ord(s)
+        return "\\x{0:02x}".format(ord(s))
 
     def encodeMindyValue(self, value):
         return self.pMindyEscape.sub(self.escapeMindy, value)
@@ -170,7 +170,7 @@ class MorkImporter(VCardImporter):
             rowkey = row.id + "/" + table.scope
 
         if rowkey in table.rows:
-            print >>stderr, "ERROR: duplicate rowid/scope %s" % rowkey
+            print >>stderr, "ERROR: duplicate rowid/scope {0!s}".format(rowkey)
             print >>stderr, cells
 
         table.rows[rowkey] = row
@@ -299,7 +299,7 @@ class MorkImporter(VCardImporter):
 
             # Syntax error
             print >>stderr, "ERROR: syntax error while parsing MORK file"
-            print >>stderr, "context[%d]: %s" % (index, sub[:40])
+            print >>stderr, "context[{0:d}]: {1!s}".format(index, sub[:40])
             index += 1
 
         # Return the database
